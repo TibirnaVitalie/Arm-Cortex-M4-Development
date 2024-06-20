@@ -1,0 +1,214 @@
+#ifndef INC_STM32F401XX_H_
+#define INC_STM32F401XX_H_
+
+#include <stdint.h>
+
+/* === STM32 F401xx BASE ADDRESSES === */
+
+/* Base addresses of Flash, SRAM and ROM memories */
+
+#define FLASH_BASEADDR				0x08000000U			/* Flash memory base address*/
+#define SRAM1_BASEADDR				0x20000000U			/* SRAM1 memory base address*/
+#define SRAM						SRAM1_BASEADDR		/* SRAM  memory base address*/
+#define ROM_BASEADDR				0x1FFF0000U			/* ROM   memory base address*/
+
+/* Buses addresses */
+
+#define PERIPH_BASEADDR				0x40000000U			/* Peripheral buses base address */
+#define APB1_BASEADDR				PERIPH_BASEADDR		/* APB1 base address */
+#define APB2_BASEADDR				0x40010000U			/* APB2 base address */
+#define AHB1_BASEADDR				0x40020000U			/* AHB1 base address */
+#define AHB2_BASEADDR				0x50000000U			/* AHB2 base address */
+
+/* GPIOs addresses */
+
+#define GPIOA_BASEADDR				AHB1_BASEADDR		/* GPIOA base address */
+#define GPIOB_BASEADDR				0x40020400U			/* GPIOB base address */
+#define GPIOC_BASEADDR				0x40020800U			/* GPIOC base address */
+#define GPIOD_BASEADDR				0x40020C00U			/* GPIOD base address */
+#define GPIOE_BASEADDR				0x40021000U			/* GPIOE base address */
+#define GPIOH_BASEADDR				0x40021C00U			/* GPIOH base address */
+
+/* I2C addresses */
+
+#define I2C1_BASEADDR				0x40005400U			/* I2C1 base address */
+#define I2C2_BASEADDR				0x40005800U			/* I2C2 base address */
+#define I2C3_BASEADDR				0x40005C00U			/* I2C3 base address */
+
+/* SPI addresses */
+
+#define SPI1_BASEADDR				0x40013000U			/* SPI1 base address */
+#define SPI2_BASEADDR				0x40003800U			/* SPI2 base address */
+#define SPI3_BASEADDR				0x40003C00U			/* SPI3 base address */
+#define SPI4_BASEADDR				0x40013400U			/* SPI4 base address */
+
+/* USART addresses */
+
+#define USART1_BASEADDR				0x40011000U			/* USART1 base address */
+#define USART2_BASEADDR				0x40004400U			/* USART2 base address */
+#define USART6_BASEADDR				0x40014000U			/* USART6 base address */
+
+/* EXTI address */
+
+#define EXTI_BASEADDR				0x40013C00U			/* EXTI base address */
+
+/* SYSCFG address */
+
+#define SYSCFG_BASEADDR				0x40013800U			/* SYSCFG base address */
+
+/* RCC address */
+
+#define RCC_BASEADDR				0x40023800U			/* RCC base address */
+
+/* === Configuration structures === */
+
+/* GPIOs configuration structure */
+
+typedef struct
+{
+	volatile uint32_t MODER;							/* Address offset: 0x00 */
+	volatile uint32_t OTYPER;							/* Address offset: 0x04 */
+	volatile uint32_t OSPEEDR;							/* Address offset: 0x08 */
+	volatile uint32_t PUPDR;							/* Address offset: 0x0C */
+	volatile uint32_t IDR;								/* Address offset: 0x10 */
+	volatile uint32_t ODR;								/* Address offset: 0x14 */
+	volatile uint32_t BSRR;								/* Address offset: 0x18 */
+	volatile uint32_t LCKR;								/* Address offset: 0x1C */
+	volatile uint32_t AFRL;								/* Address offset: 0x20 */
+	volatile uint32_t AFRH;								/* Address offset: 0x24 */
+} TS_GPIO_REG_DEF;
+
+/* I2Cs configuration structure */
+
+typedef struct
+{
+	volatile uint32_t CR1;								/* Address offset: 0x00 */
+	volatile uint32_t CR2;								/* Address offset: 0x04 */
+	volatile uint32_t OAR1;								/* Address offset: 0x08 */
+	volatile uint32_t OAR2;								/* Address offset: 0x0C */
+	volatile uint32_t DR;								/* Address offset: 0x10 */
+	volatile uint32_t SR1;								/* Address offset: 0x14 */
+	volatile uint32_t SR2;								/* Address offset: 0x18 */
+	volatile uint32_t CCR;								/* Address offset: 0x1C */
+	volatile uint32_t TRICE;							/* Address offset: 0x20 */
+	volatile uint32_t FLTR;								/* Address offset: 0x24 */
+} TS_I2C_REG_DEF;
+
+/* USARTs configuration structure */
+
+typedef struct
+{
+	volatile uint32_t SR;								/* Address offset: 0x00 */
+	volatile uint32_t DR;								/* Address offset: 0x04 */
+	volatile uint32_t BRR;								/* Address offset: 0x08 */
+	volatile uint32_t CR1;								/* Address offset: 0x0C */
+	volatile uint32_t CR2;								/* Address offset: 0x10 */
+	volatile uint32_t CR3;								/* Address offset: 0x14 */
+	volatile uint32_t GTPR;								/* Address offset: 0x18 */
+} TS_USART_REG_DEF;
+
+/* EXTI configuration structure */
+
+typedef struct
+{
+	volatile uint32_t IMR;								/* Address offset: 0x00 */
+	volatile uint32_t EMR;								/* Address offset: 0x04 */
+	volatile uint32_t RSTR;								/* Address offset: 0x08 */
+	volatile uint32_t FTSR;								/* Address offset: 0x0C */
+	volatile uint32_t SWIER;							/* Address offset: 0x10 */
+	volatile uint32_t PR;								/* Address offset: 0x14 */
+} TS_EXTI_REG_DEF;
+
+/* EXTI configuration structure */
+
+typedef struct
+{
+	volatile uint32_t MEMRMP;							/* Address offset: 0x00 */
+	volatile uint32_t PMC;								/* Address offset: 0x04 */
+	volatile uint32_t EXTICR1;							/* Address offset: 0x08 */
+	volatile uint32_t EXTICR2;							/* Address offset: 0x0C */
+	volatile uint32_t EXTICR3;							/* Address offset: 0x10 */
+	volatile uint32_t EXTICR4;							/* Address offset: 0x14 */
+			 uint32_t Reserved1;
+			 uint32_t Reserved2;
+	volatile uint32_t CMPCR;							/* Address offset: 0x20 */
+} TS_SYSCFG_REG_DEF;
+
+/* RCC configuration structure */
+
+typedef struct
+{
+	volatile uint32_t CR;								/* Address offset: 0x00 */
+	volatile uint32_t PLLCFGR;							/* Address offset: 0x04 */
+	volatile uint32_t CFGR;								/* Address offset: 0x08 */
+	volatile uint32_t CIR;								/* Address offset: 0x0C */
+	volatile uint32_t AHB1RSTR;							/* Address offset: 0x10 */
+	volatile uint32_t AHB2RSTR;							/* Address offset: 0x14 */
+			 uint32_t Reserved1;
+			 uint32_t Reserved2;
+	volatile uint32_t APB1RSTR;							/* Address offset: 0x20 */
+	volatile uint32_t APB2RSTR;							/* Address offset: 0x24 */
+			 uint32_t Reserved3;
+			 uint32_t Reserved4;
+	volatile uint32_t AHB1ENR;							/* Address offset: 0x30 */
+	volatile uint32_t AHB2ENR;							/* Address offset: 0x34 */
+			 uint32_t Reserved5;
+			 uint32_t Reserved6;
+	volatile uint32_t APB1ENR;							/* Address offset: 0x40 */
+	volatile uint32_t APB2ENR;							/* Address offset: 0x44 */
+			 uint32_t Reserved5;
+			 uint32_t Reserved6;
+	volatile uint32_t AHB1LPENR;						/* Address offset: 0x50 */
+	volatile uint32_t AHB2LPENR;						/* Address offset: 0x54 */
+			 uint32_t Reserved7;
+			 uint32_t Reserved8;
+	volatile uint32_t APB1LPENR;						/* Address offset: 0x60 */
+	volatile uint32_t APB2LPENR;						/* Address offset: 0x64 */
+			 uint32_t Reserved9;
+			 uint32_t Reserved10;
+	volatile uint32_t BDCR;								/* Address offset: 0x70 */
+	volatile uint32_t CSR;								/* Address offset: 0x74 */
+			 uint32_t Reserved11;
+			 uint32_t Reserved12;
+	volatile uint32_t SSCGR;							/* Address offset: 0x80 */
+	volatile uint32_t PLLI2SCFGR;						/* Address offset: 0x84 */
+	 	 	 uint32_t Reserved13;
+	volatile uint32_t DCKCFGR;							/* Address offset: 0x8C */
+} TS_RCC_REG_DEF;
+
+/* === Peripheral definitions === */
+
+/* GPIOs definitions */
+
+#define GPIOA						((TS_GPIO_REG_DEF*) GPIOA_BASEADDR)
+#define GPIOB						((TS_GPIO_REG_DEF*) GPIOB_BASEADDR)
+#define GPIOC						((TS_GPIO_REG_DEF*) GPIOC_BASEADDR)
+#define GPIOD						((TS_GPIO_REG_DEF*) GPIOD_BASEADDR)
+#define GPIOE						((TS_GPIO_REG_DEF*) GPIOE_BASEADDR)
+#define GPIOH						((TS_GPIO_REG_DEF*) GPIOH_BASEADDR)
+
+/* I2Cs definitions */
+
+#define I2C1						((TS_I2C_REG_DEF*) I2C1_BASEADDR)
+#define I2C2						((TS_I2C_REG_DEF*) I2C2_BASEADDR)
+#define I2C3						((TS_I2C_REG_DEF*) I2C3_BASEADDR)
+
+/* USARTs definitions */
+
+#define USART1						((TS_USART_REG_DEF*) USART1_BASEADDR)
+#define USART2						((TS_USART_REG_DEF*) USART2_BASEADDR)
+#define USART6						((TS_USART_REG_DEF*) USART6_BASEADDR)
+
+/* EXTI definition */
+
+#define EXTI						((TS_EXTI_REG_DEF*) EXTI_BASEADDR)
+
+/* SYSCFG definition */
+
+#define SYSCFG						((TS_SYSCFG_REG_DEF*) SYSCFG_BASEADDR)
+
+/* RCC definition */
+
+#define RCC							((TS_RCC_REG_DEF*) RCC_BASEADDR)
+
+#endif /* INC_STM32F401XX_H_ */
