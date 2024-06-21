@@ -75,8 +75,7 @@ typedef struct
 	volatile uint32_t ODR;								/* Address offset: 0x14 */
 	volatile uint32_t BSRR;								/* Address offset: 0x18 */
 	volatile uint32_t LCKR;								/* Address offset: 0x1C */
-	volatile uint32_t AFRL;								/* Address offset: 0x20 */
-	volatile uint32_t AFRH;								/* Address offset: 0x24 */
+	volatile uint32_t AFR[2];							/* Address offset: 0x20 and 0x24 */
 } TS_GPIO_REG_DEF;
 
 /* I2Cs configuration structure */
@@ -299,6 +298,15 @@ typedef struct
 
 /* SYSCFG Clock disable macro */
 
-#define SYSCFG_PCKL_DI()			(RCC->APB2ENR &= `(1 << 14))		/* SYSCFG Peripheral clock disable in RCC register */
+#define SYSCFG_PCKL_DI()			(RCC->APB2ENR &= ~(1 << 14))		/* SYSCFG Peripheral clock disable in RCC register */
+
+/* === GPIOs reset macros === */
+
+#define GPIOA_REG_RESET()			{RCC->AHB1RSTR |= (1 << 0); RCC->AHB1RSTR &= ~(1 << 0);}		/* Reset GPIO A  in RCC register */
+#define GPIOB_REG_RESET()			{RCC->AHB1RSTR |= (1 << 1); RCC->AHB1RSTR &= ~(1 << 1);}		/* Reset GPIO B  in RCC register */
+#define GPIOC_REG_RESET()			{RCC->AHB1RSTR |= (1 << 2); RCC->AHB1RSTR &= ~(1 << 2);}		/* Reset GPIO C  in RCC register */
+#define GPIOD_REG_RESET()			{RCC->AHB1RSTR |= (1 << 3); RCC->AHB1RSTR &= ~(1 << 3);}		/* Reset GPIO D  in RCC register */
+#define GPIOE_REG_RESET()			{RCC->AHB1RSTR |= (1 << 4); RCC->AHB1RSTR &= ~(1 << 4);}		/* Reset GPIO E  in RCC register */
+#define GPIOH_REG_RESET()			{RCC->AHB1RSTR |= (1 << 7); RCC->AHB1RSTR &= ~(1 << 7);}		/* Reset GPIO H  in RCC register */
 
 #endif /* INC_STM32F401XX_H_ */

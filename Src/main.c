@@ -17,9 +17,56 @@
  */
 
 #include "stm32f401xx.h"
+#include "stm32f401xx_gpio_driver.h"
+
+void delay(void)
+{
+	for (int i = 0; i < 1000000; ++i) {
+		;
+	}
+}
 
 int main(void)
 {
-    /* Loop forever */
-	for(;;);
+	TS_GPIO_CONFIG sGpioKeyConf;
+	sGpioKeyConf.u8GpioPinNum = 0;
+	sGpioKeyConf.u8GpioPinMode = GPIO_MODE_IN;
+	sGpioKeyConf.u8GpioPinOPType = GPIO_OUT_MODE_PP;
+	sGpioKeyConf.u8GpioPinPuPdControl = GPIO_PUPD_PU;
+	sGpioKeyConf.u8GpioPinSpeed = GPIO_OUT_SPEED_LOW;
+
+	TS_GPIO_CONFIG sGpioLedConf;
+	sGpioLedConf.u8GpioPinNum = 13;
+	sGpioLedConf.u8GpioPinMode = GPIO_MODE_OUT;
+	sGpioLedConf.u8GpioPinOPType = GPIO_OUT_MODE_PP;
+	sGpioLedConf.u8GpioPinPuPdControl = GPIO_PUPD_NU_ND;
+	sGpioLedConf.u8GpioPinSpeed = GPIO_OUT_SPEED_LOW;
+
+	TS_GPIO_HANDLE sGpioKey;
+	sGpioKey.psGpioBaseAddr = GPIOA;
+	sGpioKey.sGpioPinConfig = &sGpioKeyConf;
+
+	TS_GPIO_HANDLE sGpioLed;
+	sGpioLed.psGpioBaseAddr = GPIOC;
+	sGpioLed.sGpioPinConfig = &sGpioLedConf;
+
+	vDoGpioPeriClockControl(GPIOA, true);
+	vDoGpioPeriClockControl(GPIOC, true);
+
+	vDoGpioIni(&sGpioKey);
+	vDoGpioIni(&sGpioLed);
+
+	while(true)
+	{
+		if(!bDoGpioReadPin(GPIOA, 0))
+		{
+			vDoGpioWritePin(GPIOC, 13, false);
+		}
+		else
+		{
+			vDoGpioWritePin(GPIOC, 13, true);
+		}
+	}
+
+	return 0;
 }
