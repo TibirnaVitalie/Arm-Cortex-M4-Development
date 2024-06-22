@@ -29,14 +29,14 @@ void delay(void)
 int main(void)
 {
 	TS_GPIO_CONFIG sGpioKeyConf;
-	sGpioKeyConf.u8GpioPinNum = 0;
-	sGpioKeyConf.u8GpioPinMode = GPIO_MODE_IN;
+	sGpioKeyConf.u8GpioPinNum = 0U;
+	sGpioKeyConf.u8GpioPinMode = GPIO_MODE_IT_FE;
 	sGpioKeyConf.u8GpioPinOPType = GPIO_OUT_MODE_PP;
 	sGpioKeyConf.u8GpioPinPuPdControl = GPIO_PUPD_PU;
 	sGpioKeyConf.u8GpioPinSpeed = GPIO_OUT_SPEED_LOW;
 
 	TS_GPIO_CONFIG sGpioLedConf;
-	sGpioLedConf.u8GpioPinNum = 13;
+	sGpioLedConf.u8GpioPinNum = 13U;
 	sGpioLedConf.u8GpioPinMode = GPIO_MODE_OUT;
 	sGpioLedConf.u8GpioPinOPType = GPIO_OUT_MODE_PP;
 	sGpioLedConf.u8GpioPinPuPdControl = GPIO_PUPD_NU_ND;
@@ -56,17 +56,13 @@ int main(void)
 	vDoGpioIni(&sGpioKey);
 	vDoGpioIni(&sGpioLed);
 
-	while(true)
-	{
-		if(!bDoGpioReadPin(GPIOA, 0))
-		{
-			vDoGpioWritePin(GPIOC, 13, false);
-		}
-		else
-		{
-			vDoGpioWritePin(GPIOC, 13, true);
-		}
-	}
+	vDoGpioIrqConfig(NVIC, IRQ_NO_EXTI0, NVIC_IRQ_PRI15, true);
 
-	return 0;
+	while(1);
+}
+
+void EXTI0_IRQHandler(void){
+	vDoGpioIrqHandling(EXTI, GPIO_PIN_NUM_0);
+
+	vDoGpioTogglePin(GPIOC, 13U);
 }

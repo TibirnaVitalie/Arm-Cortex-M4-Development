@@ -90,7 +90,7 @@ void vDoGpioTogglePin(TS_GPIO_REG_DEF *psGpioPort, uint8_t u8GpioPin);
 
 /* GPIO IRQ configuration and ISR handling functions */
 
-void vDoGpioIrqConfig(uint8_t u8IrqNumber, uint8_t u8IrqPriority, bool bIqrState);
-void vDoGpioIrqHandling(uint8_t u8GpioPin);
+void vDoGpioIrqConfig(TS_NVIC_REG_DEF *psNvic, uint8_t u8IrqNumber, uint8_t u8IrqPriority, bool bIqrState);
+void vDoGpioIrqHandling(TS_EXTI_REG_DEF *psExti, uint8_t u8GpioPin);
 
 #endif /* INC_STM32F401XX_GPIO_DRIVER_H_ */

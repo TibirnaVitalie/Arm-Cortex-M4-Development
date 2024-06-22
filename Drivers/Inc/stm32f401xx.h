@@ -61,6 +61,10 @@
 
 #define RCC_BASEADDR				0x40023800U			/* RCC base address */
 
+/* NVIC address */
+
+#define NVIC_BASEADDR				0xE000E100U			/* NVIC base address */
+
 /* === Configuration structures === */
 
 /* GPIOs configuration structure */
@@ -128,7 +132,7 @@ typedef struct
 {
 	volatile uint32_t IMR;								/* Address offset: 0x00 */
 	volatile uint32_t EMR;								/* Address offset: 0x04 */
-	volatile uint32_t RSTR;								/* Address offset: 0x08 */
+	volatile uint32_t RTSR;								/* Address offset: 0x08 */
 	volatile uint32_t FTSR;								/* Address offset: 0x0C */
 	volatile uint32_t SWIER;							/* Address offset: 0x10 */
 	volatile uint32_t PR;								/* Address offset: 0x14 */
@@ -140,10 +144,7 @@ typedef struct
 {
 	volatile uint32_t MEMRMP;							/* Address offset: 0x00 */
 	volatile uint32_t PMC;								/* Address offset: 0x04 */
-	volatile uint32_t EXTICR1;							/* Address offset: 0x08 */
-	volatile uint32_t EXTICR2;							/* Address offset: 0x0C */
-	volatile uint32_t EXTICR3;							/* Address offset: 0x10 */
-	volatile uint32_t EXTICR4;							/* Address offset: 0x14 */
+	volatile uint32_t EXTICR[4];						/* Address offset: 0x08 */
 			 uint32_t Reserved1;
 			 uint32_t Reserved2;
 	volatile uint32_t CMPCR;							/* Address offset: 0x20 */
@@ -191,6 +192,25 @@ typedef struct
 	volatile uint32_t DCKCFGR;							/* Address offset: 0x8C */
 } TS_RCC_REG_DEF;
 
+/* NVIC configuration structure */
+
+typedef struct
+{
+	volatile uint32_t ISER[8];							/* Offset: 0x0100 */
+			 uint32_t Reserved1[24];
+	volatile uint32_t ICER[8];							/* Offset: 0x0180 */
+			 uint32_t Reserved2[24];
+	volatile uint32_t ISPR[8];							/* Offset: 0x0200 */
+			 uint32_t Reserved3[24];
+	volatile uint32_t ICPR[8];							/* Offset: 0x0280 */
+			 uint32_t Reserved4[24];
+	volatile uint32_t IABR[8];							/* Offset: 0x0300 */
+			 uint32_t Reserved5[56];
+	volatile uint32_t IPR[60];							/* Offset: 0x0400 */
+			 uint32_t Reserved6[644];
+	volatile uint32_t STIR;								/* Offset: 0x0E00 */
+} TS_NVIC_REG_DEF;
+
 /* === Peripheral definitions === */
 
 /* GPIOs definitions */
@@ -231,6 +251,10 @@ typedef struct
 /* RCC definition */
 
 #define RCC							((TS_RCC_REG_DEF*) RCC_BASEADDR)
+
+/* NVIC definition */
+
+#define NVIC						((TS_NVIC_REG_DEF*) NVIC_BASEADDR)
 
 /* === Peripheral Clocks enable macros === */
 
@@ -298,7 +322,7 @@ typedef struct
 
 /* SYSCFG Clock disable macro */
 
-#define SYSCFG_PCKL_DI()			(RCC->APB2ENR &= ~(1 << 14))		/* SYSCFG Peripheral clock disable in RCC register */
+#define SYSCFG_PCKL_DI()			(RCC->APB2ENR &= ~(1 << 14))	/* SYSCFG Peripheral clock disable in RCC register */
 
 /* === GPIOs reset macros === */
 
@@ -308,5 +332,32 @@ typedef struct
 #define GPIOD_REG_RESET()			{RCC->AHB1RSTR |= (1 << 3); RCC->AHB1RSTR &= ~(1 << 3);}		/* Reset GPIO D  in RCC register */
 #define GPIOE_REG_RESET()			{RCC->AHB1RSTR |= (1 << 4); RCC->AHB1RSTR &= ~(1 << 4);}		/* Reset GPIO E  in RCC register */
 #define GPIOH_REG_RESET()			{RCC->AHB1RSTR |= (1 << 7); RCC->AHB1RSTR &= ~(1 << 7);}		/* Reset GPIO H  in RCC register */
+
+/* === IRQ(Interrupt Request) Numbers === */
+
+#define IRQ_NO_EXTI0				6
+#define IRQ_NO_EXTI1				7
+#define IRQ_NO_EXTI2				8
+#define IRQ_NO_EXTI3				9
+#define IRQ_NO_EXTI4				10
+#define IRQ_NO_EXTI9_5				23
+#define IRQ_NO_EXTI15_10			40
+
+#define NVIC_IRQ_PRI0				0
+#define NVIC_IRQ_PRI1				1
+#define NVIC_IRQ_PRI2				2
+#define NVIC_IRQ_PRI3				3
+#define NVIC_IRQ_PRI4				4
+#define NVIC_IRQ_PRI5				5
+#define NVIC_IRQ_PRI6				6
+#define NVIC_IRQ_PRI7				7
+#define NVIC_IRQ_PRI8				8
+#define NVIC_IRQ_PRI9				9
+#define NVIC_IRQ_PRI10				10
+#define NVIC_IRQ_PRI11				11
+#define NVIC_IRQ_PRI12				12
+#define NVIC_IRQ_PRI13				13
+#define NVIC_IRQ_PRI14				14
+#define NVIC_IRQ_PRI15				15
 
 #endif /* INC_STM32F401XX_H_ */
