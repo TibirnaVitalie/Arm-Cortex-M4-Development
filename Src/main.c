@@ -16,8 +16,8 @@
  ******************************************************************************
  */
 
+#include <string.h>
 #include "stm32f401xx.h"
-#include "stm32f401xx_gpio_driver.h"
 
 void delay(void)
 {
@@ -26,43 +26,102 @@ void delay(void)
 	}
 }
 
-int main(void)
+static inline void vDoSpiGpioConf(void);
+static inline void vDoSpiHandleConf(void);
+
+static inline void vDoSpiGpioConf(void)
 {
-	TS_GPIO_CONFIG sGpioKeyConf;
-	sGpioKeyConf.u8GpioPinNum = 0U;
-	sGpioKeyConf.u8GpioPinMode = GPIO_MODE_IT_FE;
-	sGpioKeyConf.u8GpioPinOPType = GPIO_OUT_MODE_PP;
-	sGpioKeyConf.u8GpioPinPuPdControl = GPIO_PUPD_PU;
-	sGpioKeyConf.u8GpioPinSpeed = GPIO_OUT_SPEED_LOW;
+	TS_GPIO_CONFIG sSpiNssConf;
+	sSpiNssConf.u8GpioPinNum = 12U;
+	sSpiNssConf.u8GpioPinMode = GPIO_MODE_ALT_FUNC;
+	sSpiNssConf.u8GpioPinOPType = GPIO_OUT_MODE_PP;
+	sSpiNssConf.u8GpioPinPuPdControl = GPIO_PUPD_NU_ND;
+	sSpiNssConf.u8GpioPinSpeed = GPIO_OUT_SPEED_VERY_HIGH;
+	sSpiNssConf.u8GpioPinAltFunMode = 0x05;
 
-	TS_GPIO_CONFIG sGpioLedConf;
-	sGpioLedConf.u8GpioPinNum = 13U;
-	sGpioLedConf.u8GpioPinMode = GPIO_MODE_OUT;
-	sGpioLedConf.u8GpioPinOPType = GPIO_OUT_MODE_PP;
-	sGpioLedConf.u8GpioPinPuPdControl = GPIO_PUPD_NU_ND;
-	sGpioLedConf.u8GpioPinSpeed = GPIO_OUT_SPEED_LOW;
+	TS_GPIO_CONFIG sSpiSckConf;
+	sSpiSckConf.u8GpioPinNum = 13U;
+	sSpiSckConf.u8GpioPinMode = GPIO_MODE_ALT_FUNC;
+	sSpiSckConf.u8GpioPinOPType = GPIO_OUT_MODE_PP;
+	sSpiSckConf.u8GpioPinPuPdControl = GPIO_PUPD_NU_ND;
+	sSpiSckConf.u8GpioPinSpeed = GPIO_OUT_SPEED_VERY_HIGH;
+	sSpiSckConf.u8GpioPinAltFunMode = 0x05;
 
-	TS_GPIO_HANDLE sGpioKey;
-	sGpioKey.psGpioBaseAddr = GPIOA;
-	sGpioKey.sGpioPinConfig = &sGpioKeyConf;
+	TS_GPIO_CONFIG sSpiMisoConf;
+	sSpiMisoConf.u8GpioPinNum = 14U;
+	sSpiMisoConf.u8GpioPinMode = GPIO_MODE_ALT_FUNC;
+	sSpiMisoConf.u8GpioPinOPType = GPIO_OUT_MODE_PP;
+	sSpiMisoConf.u8GpioPinPuPdControl = GPIO_PUPD_NU_ND;
+	sSpiMisoConf.u8GpioPinSpeed = GPIO_OUT_SPEED_VERY_HIGH;
+	sSpiMisoConf.u8GpioPinAltFunMode = 0x05;
 
-	TS_GPIO_HANDLE sGpioLed;
-	sGpioLed.psGpioBaseAddr = GPIOC;
-	sGpioLed.sGpioPinConfig = &sGpioLedConf;
+	TS_GPIO_CONFIG sSpiMosiConf;
+	sSpiMosiConf.u8GpioPinNum = 15U;
+	sSpiMosiConf.u8GpioPinMode = GPIO_MODE_ALT_FUNC;
+	sSpiMosiConf.u8GpioPinOPType = GPIO_OUT_MODE_PP;
+	sSpiMosiConf.u8GpioPinPuPdControl = GPIO_PUPD_NU_ND;
+	sSpiMosiConf.u8GpioPinSpeed = GPIO_OUT_SPEED_VERY_HIGH;
+	sSpiMosiConf.u8GpioPinAltFunMode = 0x05;
 
-	vDoGpioPeriClockControl(GPIOA, true);
-	vDoGpioPeriClockControl(GPIOC, true);
+	TS_GPIO_HANDLE sSpiNss;
+	sSpiNss.psGpioBaseAddr = GPIOB;
+	sSpiNss.sGpioPinConfig = &sSpiNssConf;
 
-	vDoGpioIni(&sGpioKey);
-	vDoGpioIni(&sGpioLed);
+	TS_GPIO_HANDLE sSpiSck;
+	sSpiSck.psGpioBaseAddr = GPIOB;
+	sSpiSck.sGpioPinConfig = &sSpiSckConf;
 
-	vDoGpioIrqConfig(NVIC, IRQ_NO_EXTI0, NVIC_IRQ_PRI15, true);
+	TS_GPIO_HANDLE sSpiMiso;
+	sSpiMiso.psGpioBaseAddr = GPIOB;
+	sSpiMiso.sGpioPinConfig = &sSpiMisoConf;
 
-	while(1);
+	TS_GPIO_HANDLE sSpiMosi;
+	sSpiMosi.psGpioBaseAddr = GPIOB;
+	sSpiMosi.sGpioPinConfig = &sSpiMosiConf;
+
+
+	vDoGpioPeriClockControl(GPIOB, true);
+
+	vDoGpioIni(&sSpiNss);
+	vDoGpioIni(&sSpiSck);
+	vDoGpioIni(&sSpiMiso);
+	vDoGpioIni(&sSpiMosi);
+}
+static inline void vDoSpiHandleConf(void)
+{
+	TS_SPI_CONFIG sSpiConf;
+	sSpiConf.u8SpiDeviceMode = SPI_DEVICE_MOVE_MASTER;
+	sSpiConf.u8SpiBusConfig = SPI_BUS_CONFIG_FD;
+	sSpiConf.u8SpiSclkSpeed = SPI_SPEED_PCLK_DIV256;
+	sSpiConf.u8SpiDff = SPI_DFF_16BITS;
+	sSpiConf.u8SpiCpol = SPI_CPOL_LOW;
+	sSpiConf.u8SpiCpha = SPI_CPHA_LOW;
+	sSpiConf.u8SpiSsm = SPI_SSM_SW;
+
+	TS_SPI_HANDLE sSpiHandle;
+	sSpiHandle.psSpiBaseAddr = SPI2;
+	sSpiHandle.sSpiConfig = &sSpiConf;
+
+	vDoSpiPeriClockControl(SPI2, true);
+
+	vDoSpiIni(&sSpiHandle);
 }
 
-void EXTI0_IRQHandler(void){
-	vDoGpioIrqHandling(EXTI, GPIO_PIN_NUM_0);
+int main(void)
+{
+	char user_data[] = "Hello world!!!";
 
-	vDoGpioTogglePin(GPIOC, 13U);
+	vDoSpiGpioConf();
+
+	vDoSpiHandleConf();
+
+	vDoSpiSsiControl(SPI2, true);
+
+	vDoSpiPeriControl(SPI2, true);
+
+	while(1)
+	{
+		vDoSpiSendData(SPI2, (uint8_t*) user_data, strlen(user_data));
+		delay();
+	}
 }

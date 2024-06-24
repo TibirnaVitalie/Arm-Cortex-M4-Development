@@ -103,7 +103,7 @@ typedef struct
 typedef struct
 {
 	volatile uint32_t CR1;								/* Address offset: 0x00 */
-			 uint32_t Reserved1;
+	volatile uint32_t CR2;								/* Address offset: 0x04 */
 	volatile uint32_t SR;								/* Address offset: 0x08 */
 	volatile uint32_t DR;								/* Address offset: 0x0C */
 	volatile uint32_t CRCPR;							/* Address offset: 0x10 */
@@ -324,7 +324,9 @@ typedef struct
 
 #define SYSCFG_PCKL_DI()			(RCC->APB2ENR &= ~(1 << 14))	/* SYSCFG Peripheral clock disable in RCC register */
 
-/* === GPIOs reset macros === */
+/* === Peripherals registers reset macros === */
+
+/* GPIOs reset macros */
 
 #define GPIOA_REG_RESET()			{RCC->AHB1RSTR |= (1 << 0); RCC->AHB1RSTR &= ~(1 << 0);}		/* Reset GPIO A  in RCC register */
 #define GPIOB_REG_RESET()			{RCC->AHB1RSTR |= (1 << 1); RCC->AHB1RSTR &= ~(1 << 1);}		/* Reset GPIO B  in RCC register */
@@ -332,6 +334,13 @@ typedef struct
 #define GPIOD_REG_RESET()			{RCC->AHB1RSTR |= (1 << 3); RCC->AHB1RSTR &= ~(1 << 3);}		/* Reset GPIO D  in RCC register */
 #define GPIOE_REG_RESET()			{RCC->AHB1RSTR |= (1 << 4); RCC->AHB1RSTR &= ~(1 << 4);}		/* Reset GPIO E  in RCC register */
 #define GPIOH_REG_RESET()			{RCC->AHB1RSTR |= (1 << 7); RCC->AHB1RSTR &= ~(1 << 7);}		/* Reset GPIO H  in RCC register */
+
+/* SPIs reset macros */
+
+#define SPI1_REG_RESET()			{RCC->APB2RSTR |= (1 << 12); RCC->APB2RSTR &= ~(1 << 12);}		/* Reset SPI 1  in RCC register */
+#define SPI2_REG_RESET()			{RCC->APB1RSTR |= (1 << 14); RCC->APB1RSTR &= ~(1 << 14);}		/* Reset SPI 2  in RCC register */
+#define SPI3_REG_RESET()			{RCC->APB1RSTR |= (1 << 15); RCC->APB1RSTR &= ~(1 << 15);}		/* Reset SPI 3  in RCC register */
+#define SPI4_REG_RESET()			{RCC->APB2RSTR |= (1 << 13); RCC->APB2RSTR &= ~(1 << 13);}		/* Reset SPI 4  in RCC register */
 
 /* === IRQ(Interrupt Request) Numbers === */
 
@@ -359,5 +368,10 @@ typedef struct
 #define NVIC_IRQ_PRI13				13
 #define NVIC_IRQ_PRI14				14
 #define NVIC_IRQ_PRI15				15
+
+/* === Include drivers headers === */
+
+#include "stm32f401xx_gpio_driver.h"
+#include "stm32f401xx_spi_driver.h"
 
 #endif /* INC_STM32F401XX_H_ */

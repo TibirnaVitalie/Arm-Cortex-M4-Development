@@ -1,0 +1,7 @@
+../Drivers/Src/stm32f401xx_spi_driver.c:22:6:bDoGetSpiFlag	1
+../Drivers/Src/stm32f401xx_spi_driver.c:39:6:vDoSpiPeriClockControl	10
+../Drivers/Src/stm32f401xx_spi_driver.c:90:6:vDoSpiIni	5
+../Drivers/Src/stm32f401xx_spi_driver.c:146:6:vDoSpiDeIni	5
+../Drivers/Src/stm32f401xx_spi_driver.c:178:6:vDoSpiSendData	4
+../Drivers/Src/stm32f401xx_spi_driver.c:211:6:vDoSpiPeriControl	2
+../Drivers/Src/stm32f401xx_spi_driver.c:234:6:vDoSpiSsiControl	2

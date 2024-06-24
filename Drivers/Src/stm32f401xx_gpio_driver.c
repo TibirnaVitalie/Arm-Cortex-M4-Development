@@ -53,7 +53,7 @@ static inline uint8_t u8GetGpioPortCode(TS_GPIO_REG_DEF *psGpioPort)
 /* Configure IRQ for PGIOs */
 
 /* ===========================================================================
- * Function name: u8GetGpioPortCode()
+ * Function name: vDoGpioIrqIni()
  * Parameters   :
  * 					TS_GPIO_HANDLE *psGpioHandle - GPIO Handle structure
  * Return       : void
