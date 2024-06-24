@@ -3,5 +3,6 @@
 ../Drivers/Src/stm32f401xx_spi_driver.c:90:6:vDoSpiIni	5
 ../Drivers/Src/stm32f401xx_spi_driver.c:146:6:vDoSpiDeIni	5
 ../Drivers/Src/stm32f401xx_spi_driver.c:178:6:vDoSpiSendData	4
-../Drivers/Src/stm32f401xx_spi_driver.c:211:6:vDoSpiPeriControl	2
-../Drivers/Src/stm32f401xx_spi_driver.c:234:6:vDoSpiSsiControl	2
+../Drivers/Src/stm32f401xx_spi_driver.c:210:6:vDoSpiReceiveData	4
+../Drivers/Src/stm32f401xx_spi_driver.c:243:6:vDoSpiPeriControl	2
+../Drivers/Src/stm32f401xx_spi_driver.c:266:6:vDoSpiSsiControl	2

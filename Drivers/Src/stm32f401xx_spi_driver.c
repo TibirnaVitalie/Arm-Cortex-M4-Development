@@ -166,7 +166,7 @@ void vDoSpiDeIni(TS_SPI_REG_DEF *psSpi)
 /* SPI Data Send and Receive functions */
 
 /* ===========================================================================
- * Function name: vDoSpiDeIni()
+ * Function name: vDoSpiSendData()
  * Parameters   :
  * 					TS_SPI_REG_DEF *psSpi - SPI Definition
  * 					uint8_t *pu8SpiTxBuff - Address of TX Buffer
@@ -193,6 +193,38 @@ void vDoSpiSendData(TS_SPI_REG_DEF *psSpi, uint8_t *pu8SpiTxBuff, uint32_t u32Sp
 		{
 			psSpi->DR = *pu8SpiTxBuff;						/* Load 8 bits into SPI_DR register  */
 			pu8SpiTxBuff++;
+		}
+	}
+}
+
+/* ===========================================================================
+ * Function name: vDoSpiReceiveData()
+ * Parameters   :
+ * 					TS_SPI_REG_DEF *psSpi - SPI Definition
+ * 					uint8_t *pu8SpiRxBuff - Address of RX Buffer
+ * 					uint32_t u32SpiDataLen - SPI RX Buffer length
+ * Return       : void
+ * ===========================================================================
+ */
+
+void vDoSpiReceiveData(TS_SPI_REG_DEF *psSpi, uint8_t *pu8SpiRxBuff, uint32_t u32SpiDataLen)
+{
+	static uint32_t u32SpiLen ;
+
+	for(u32SpiLen = 0; u32SpiLen < u32SpiDataLen ; ++u32SpiLen)
+	{
+		while(!bDoGetSpiFlag(psSpi, SPI_RXNE_FLAG));		/* Wait until RX buffer is not empty */
+
+		if((psSpi->CR1 & (0x01 << 11U)) != 0x00)
+		{
+			*((uint16_t*)pu8SpiRxBuff) = psSpi->DR;			/* Read 16 bits from SPI_DR register */
+			++u32SpiLen;									/* Increment loop counter            */
+			(uint16_t*)pu8SpiRxBuff++;
+		}
+		else
+		{
+			*pu8SpiRxBuff = psSpi->DR;						/* Read 8 bits from SPI_DR register  */
+			pu8SpiRxBuff++;
 		}
 	}
 }

@@ -3,5 +3,6 @@
 ../Drivers/Src/stm32f401xx_spi_driver.c:90:6:vDoSpiIni	24	static
 ../Drivers/Src/stm32f401xx_spi_driver.c:146:6:vDoSpiDeIni	16	static
 ../Drivers/Src/stm32f401xx_spi_driver.c:178:6:vDoSpiSendData	24	static
-../Drivers/Src/stm32f401xx_spi_driver.c:211:6:vDoSpiPeriControl	16	static
-../Drivers/Src/stm32f401xx_spi_driver.c:234:6:vDoSpiSsiControl	16	static
+../Drivers/Src/stm32f401xx_spi_driver.c:210:6:vDoSpiReceiveData	24	static
+../Drivers/Src/stm32f401xx_spi_driver.c:243:6:vDoSpiPeriControl	16	static
+../Drivers/Src/stm32f401xx_spi_driver.c:266:6:vDoSpiSsiControl	16	static
