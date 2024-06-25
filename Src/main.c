@@ -93,14 +93,14 @@ static inline void vDoSpiHandleConf(void)
 	sSpiConf.u8SpiDeviceMode = SPI_DEVICE_MOVE_MASTER;
 	sSpiConf.u8SpiBusConfig = SPI_BUS_CONFIG_FD;
 	sSpiConf.u8SpiSclkSpeed = SPI_SPEED_PCLK_DIV256;
-	sSpiConf.u8SpiDff = SPI_DFF_16BITS;
+	sSpiConf.u8SpiDff = SPI_DFF_8BITS;
 	sSpiConf.u8SpiCpol = SPI_CPOL_LOW;
 	sSpiConf.u8SpiCpha = SPI_CPHA_LOW;
 	sSpiConf.u8SpiSsm = SPI_SSM_SW;
 
 	TS_SPI_HANDLE sSpiHandle;
 	sSpiHandle.psSpiBaseAddr = SPI2;
-	sSpiHandle.sSpiConfig = &sSpiConf;
+	sSpiHandle.psSpiConfig = &sSpiConf;
 
 	vDoSpiPeriClockControl(SPI2, true);
 
@@ -113,7 +113,25 @@ int main(void)
 
 	vDoSpiGpioConf();
 
-	vDoSpiHandleConf();
+	TS_SPI_CONFIG sSpiConf;
+	sSpiConf.u8SpiDeviceMode = SPI_DEVICE_MOVE_MASTER;
+	sSpiConf.u8SpiBusConfig = SPI_BUS_CONFIG_FD;
+	sSpiConf.u8SpiSclkSpeed = SPI_SPEED_PCLK_DIV256;
+	sSpiConf.u8SpiDff = SPI_DFF_8BITS;
+	sSpiConf.u8SpiCpol = SPI_CPOL_LOW;
+	sSpiConf.u8SpiCpha = SPI_CPHA_LOW;
+	sSpiConf.u8SpiSsm = SPI_SSM_SW;
+
+	TS_SPI_HANDLE sSpiHandle;
+	sSpiHandle.psSpiBaseAddr = SPI2;
+	sSpiHandle.psSpiConfig = &sSpiConf;
+	sSpiHandle.eStateSpiBus = eStateSpiBusReady;
+
+	vDoSpiPeriClockControl(SPI2, true);
+
+	vDoSpiIni(&sSpiHandle);
+
+	vDoSpiIrqConfig(NVIC, IRQ_NO_SPI2, NVIC_IRQ_PRI15, true);
 
 	vDoSpiSsiControl(SPI2, true);
 
@@ -121,7 +139,30 @@ int main(void)
 
 	while(1)
 	{
-		vDoSpiSendData(SPI2, (uint8_t*) user_data, strlen(user_data));
+		vDoSpiSendDataIt(&sSpiHandle, (uint8_t*) user_data, strlen(user_data));
 		delay();
 	}
+}
+
+void vDoSpiEventCallback(TS_SPI_HANDLE *psSpiHandle, TE_SPI_STATUS_EVENT eSpiStatusEvent)
+{
+
+}
+
+void SPI2_IRQHandler(void)
+{
+	TS_SPI_CONFIG sSpiConf;
+		sSpiConf.u8SpiDeviceMode = SPI_DEVICE_MOVE_MASTER;
+		sSpiConf.u8SpiBusConfig = SPI_BUS_CONFIG_FD;
+		sSpiConf.u8SpiSclkSpeed = SPI_SPEED_PCLK_DIV256;
+		sSpiConf.u8SpiDff = SPI_DFF_8BITS;
+		sSpiConf.u8SpiCpol = SPI_CPOL_LOW;
+		sSpiConf.u8SpiCpha = SPI_CPHA_LOW;
+		sSpiConf.u8SpiSsm = SPI_SSM_SW;
+
+		TS_SPI_HANDLE sSpiHandle;
+		sSpiHandle.psSpiBaseAddr = SPI2;
+		sSpiHandle.psSpiConfig = &sSpiConf;
+		sSpiHandle.eStateSpiBus = eStateSpiBusReady;
+	vDoSpiIrqHandling(EXTI, &sSpiHandle);
 }

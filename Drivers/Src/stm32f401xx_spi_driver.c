@@ -6,22 +6,95 @@
 
 /* === Local Functions === */
 
-bool bDoGetSpiFlag(TS_SPI_REG_DEF *psSpi, uint32_t u32SpiFlag);
+static inline void vDoSpiTxeHandle(TS_SPI_HANDLE *psSpiHandle);
+static inline void vDoSpiRxneHandle(TS_SPI_HANDLE *psSpiHandle);
+static inline void vDoSpiOvrHandle(TS_SPI_HANDLE *psSpiHandle);
 
-/* SPI Flag return function */
+/* SPI interrupts handle functions */
 
 /* ===========================================================================
- * Function name: bDoGetSpiFlag()
+ * Function name: vDoSpiTxeHandle()
  * Parameters   :
- * 					TS_SPI_REG_DEF *psSpi - SPI Base Address
- * 					uint32_t u32SpiFlag - SPI Flag
- * Return       : boolean - Status of flag
+ * 					TS_SPI_HANDLE *psSpiHandle - SPI Handle
+ * Return       : void
  * ===========================================================================
  */
 
-bool bDoGetSpiFlag(TS_SPI_REG_DEF *psSpi, uint32_t u32SpiFlag)
+static inline void vDoSpiTxeHandle(TS_SPI_HANDLE *psSpiHandle)
 {
-	return ((psSpi->SR & (0x01 << u32SpiFlag)) != 0x00);
+	if((psSpiHandle->psSpiBaseAddr->CR1 & (0x01 << 11U)) != 0x00)
+	{
+		/* Load 16 bits into SPI_DR register */
+		psSpiHandle->psSpiBaseAddr->DR = *((uint16_t*)psSpiHandle->pu8SpiTxBuff);
+		--psSpiHandle->u32SpiTxBuffLen;
+		--psSpiHandle->u32SpiTxBuffLen;
+		(uint16_t*)psSpiHandle->pu8SpiTxBuff++;
+	}
+	else
+	{
+		/* Load 8 bits into SPI_DR register */
+		psSpiHandle->psSpiBaseAddr->DR = *psSpiHandle->pu8SpiTxBuff;
+		--psSpiHandle->u32SpiTxBuffLen;
+		psSpiHandle->pu8SpiTxBuff++;
+	}
+
+	if(0U == psSpiHandle->u32SpiTxBuffLen)
+	{
+		vDoSpiCloseTransmission(psSpiHandle);
+		vDoSpiEventCallback(psSpiHandle, eStatusEventSpiTxDone);
+	}
+}
+
+/* ===========================================================================
+ * Function name: vDoSpiRxneHandle()
+ * Parameters   :
+ *					TS_SPI_HANDLE *psSpiHandle - SPI Handle
+ * Return       : void
+ * ===========================================================================
+ */
+
+static inline void vDoSpiRxneHandle(TS_SPI_HANDLE *psSpiHandle)
+{
+	if((psSpiHandle->psSpiBaseAddr->CR1 & (0x01 << 11U)) != 0x00)
+	{
+		/* Read 16 bits from SPI_DR register */
+		*((uint16_t*)psSpiHandle->pu8SpiRxBuff) = psSpiHandle->psSpiBaseAddr->DR;
+		--psSpiHandle->u32SpiRxBuffLen;
+		--psSpiHandle->u32SpiRxBuffLen;
+		(uint16_t*)psSpiHandle->pu8SpiRxBuff++;
+	}
+	else
+	{
+		/* Read 8 bits from SPI_DR register */
+		*psSpiHandle->pu8SpiRxBuff = psSpiHandle->psSpiBaseAddr->DR;
+		--psSpiHandle->u32SpiRxBuffLen;
+		psSpiHandle->pu8SpiRxBuff++;
+	}
+
+	if(0U == psSpiHandle->u32SpiRxBuffLen)
+	{
+		vDoSpiCloseReception(psSpiHandle);
+		vDoSpiEventCallback(psSpiHandle, eStatusEventSpiRxDone);
+	}
+}
+
+/* ===========================================================================
+ * Function name: vDoSpiOvrHandle()
+ * Parameters   :
+ * 					TS_SPI_HANDLE *psSpiHandle - SPI Handle
+ * Return       : void
+ * ===========================================================================
+ */
+
+static inline void vDoSpiOvrHandle(TS_SPI_HANDLE *psSpiHandle)
+{
+	if(eStateSpiBusBusyTx != psSpiHandle->eStateSpiBus)
+	{
+		vDoSpiClearOvrFlag(psSpiHandle->psSpiBaseAddr);
+	}
+
+	/* Inform the application */
+	vDoSpiEventCallback(psSpiHandle, eStatusEventSpiOvrErr);
 }
 
 /* === Global Functions === */
@@ -36,6 +109,7 @@ bool bDoGetSpiFlag(TS_SPI_REG_DEF *psSpi, uint32_t u32SpiFlag)
  * Return       : void
  * ===========================================================================
  */
+
 void vDoSpiPeriClockControl(TS_SPI_REG_DEF *psSpi, bool bState)
 {
 	if(bState)
@@ -89,11 +163,11 @@ void vDoSpiPeriClockControl(TS_SPI_REG_DEF *psSpi, bool bState)
  */
 void vDoSpiIni(TS_SPI_HANDLE *psSpiHandle)
 {
-	uint8_t u8SpiBusMode = (psSpiHandle->sSpiConfig->u8SpiBusConfig & 0x03);
+	uint8_t u8SpiBusMode = (psSpiHandle->psSpiConfig->u8SpiBusConfig & 0x03);
 
 	/* Initialize SPI Device Mode */
 	psSpiHandle->psSpiBaseAddr->CR1 &= ~(0x01 << 2U);
-	psSpiHandle->psSpiBaseAddr->CR1 |= ((psSpiHandle->sSpiConfig->u8SpiDeviceMode & 0x01) << 2U);
+	psSpiHandle->psSpiBaseAddr->CR1 |= ((psSpiHandle->psSpiConfig->u8SpiDeviceMode & 0x01) << 2U);
 
 	/* Initialize SPI Bus Mode */
 		switch (u8SpiBusMode) {
@@ -117,23 +191,23 @@ void vDoSpiIni(TS_SPI_HANDLE *psSpiHandle)
 
 	/* Initialize SPI Baud Rate */
 	psSpiHandle->psSpiBaseAddr->CR1 &= ~(0x07 << 3U);
-	psSpiHandle->psSpiBaseAddr->CR1 |= ((psSpiHandle->sSpiConfig->u8SpiSclkSpeed & 0x07) << 3U);
+	psSpiHandle->psSpiBaseAddr->CR1 |= ((psSpiHandle->psSpiConfig->u8SpiSclkSpeed & 0x07) << 3U);
 
 	/* Initialize SPI Data Frame Format */
 	psSpiHandle->psSpiBaseAddr->CR1 &= ~(0x01 << 11U);
-	psSpiHandle->psSpiBaseAddr->CR1 |= ((psSpiHandle->sSpiConfig->u8SpiDff & 0x01) << 11U);
+	psSpiHandle->psSpiBaseAddr->CR1 |= ((psSpiHandle->psSpiConfig->u8SpiDff & 0x01) << 11U);
 
 	/* Initialize SPI Clock Polarity */
 	psSpiHandle->psSpiBaseAddr->CR1 &= ~(0x01 << 1U);
-	psSpiHandle->psSpiBaseAddr->CR1 |= ((psSpiHandle->sSpiConfig->u8SpiCpol & 0x01) << 1U);
+	psSpiHandle->psSpiBaseAddr->CR1 |= ((psSpiHandle->psSpiConfig->u8SpiCpol & 0x01) << 1U);
 
 	/* Initialize SPI Clock Phase */
 	psSpiHandle->psSpiBaseAddr->CR1 &= ~(0x01 << 0U);
-	psSpiHandle->psSpiBaseAddr->CR1 |= ((psSpiHandle->sSpiConfig->u8SpiCpha & 0x01) << 0U);
+	psSpiHandle->psSpiBaseAddr->CR1 |= ((psSpiHandle->psSpiConfig->u8SpiCpha & 0x01) << 0U);
 
 	/* Initialize SPI Slave Management */
 	psSpiHandle->psSpiBaseAddr->CR1 &= ~(0x01 << 9U);
-	psSpiHandle->psSpiBaseAddr->CR1 |= ((psSpiHandle->sSpiConfig->u8SpiSsm & 0x01) << 9U);
+	psSpiHandle->psSpiBaseAddr->CR1 |= ((psSpiHandle->psSpiConfig->u8SpiSsm & 0x01) << 9U);
 }
 
 /* ===========================================================================
@@ -229,7 +303,126 @@ void vDoSpiReceiveData(TS_SPI_REG_DEF *psSpi, uint8_t *pu8SpiRxBuff, uint32_t u3
 	}
 }
 
-/* SPI Peripheral control function */
+/* Interrupts based SPI Data Send and Receive functions */
+
+/* ===========================================================================
+ * Function name: vDoSpiSendDataIt()
+ * Parameters   :
+ * 					TS_SPI_HANDLE *psSpiHandle - SPI Handle structure
+ * 					uint8_t *pu8SpiTxBuff - Address of TX Buffer
+ * 					uint32_t u32SpiDataLen - SPI TX Buffer length
+ * Return       : TE_SPI_BUS_STATE - State of SPI Bus
+ * ===========================================================================
+ */
+
+TE_SPI_BUS_STATE vDoSpiSendDataIt(TS_SPI_HANDLE *psSpiHandle, uint8_t *pu8SpiTxBuff, uint32_t u32SpiDataLen)
+{
+	TE_SPI_BUS_STATE eStateSpiBus = psSpiHandle->eStateSpiBus;
+
+	if(eStateSpiBus != eStateSpiBusBusyTx)
+	{
+		/* Store TX Buffer address and TX Buffer length in handle structure */
+		psSpiHandle->pu8SpiTxBuff = pu8SpiTxBuff;
+		psSpiHandle->u32SpiTxBuffLen = u32SpiDataLen;
+
+		/* Set SPI Bus in TX busy mode */
+		psSpiHandle->eStateSpiBus = eStateSpiBusBusyTx;
+
+		/* Enable interrupt on TXE Flag in SPI_SR register */
+		psSpiHandle->psSpiBaseAddr->CR2 |= (0x01 << 7U);
+	}
+
+	return eStateSpiBus;
+}
+
+/* ===========================================================================
+ * Function name: vDoSpiReceiveDataIt()
+ * Parameters   :
+ * 					TS_SPI_HANDLE *psSpiHandle - SPI Handle structure
+ * 					uint8_t *pu8SpiRxBuff - Address of RX Buffer
+ * 					uint32_t u32SpiDataLen - SPI RX Buffer length
+ * Return       : TE_SPI_BUS_STATE - State of SPI Bus
+ * ===========================================================================
+ */
+
+TE_SPI_BUS_STATE vDoSpiReceiveDataIt(TS_SPI_HANDLE *psSpiHandle, uint8_t *pu8SpiRxBuff, uint32_t u32SpiDataLen)
+{
+	TE_SPI_BUS_STATE eStateSpiBus = psSpiHandle->eStateSpiBus;
+
+	if(eStateSpiBus != eStateSpiBusBusyRx)
+	{
+		/* Store RX Buffer address and RX Buffer length in handle structure */
+		psSpiHandle->pu8SpiRxBuff = pu8SpiRxBuff;
+		psSpiHandle->u32SpiRxBuffLen = u32SpiDataLen;
+
+		/* Set SPI Bus in RX busy mode */
+		psSpiHandle->eStateSpiBus = eStateSpiBusBusyRx;
+
+		/* Enable interrupt on RXNE Flag in SPI_SR register */
+		psSpiHandle->psSpiBaseAddr->CR2 |= (0x01 << 6U);
+	}
+
+	return eStateSpiBus;
+}
+
+/* SPI IRQ configuration and ISR handling functions */
+
+/* ===========================================================================
+ * Function name: vDoSpiIrqConfig()
+ * Parameters   :
+ * 					TS_NVIC_REG_DEF *psNvic - NIVC definition
+ * 					uint8_t u8IqrNumber - IQR Number
+ * 					uint8_t u8IqrPriority - IQR Priority
+ * 					boolean bIqrState - State of IQR
+ * Return       : void
+ * ===========================================================================
+ */
+void vDoSpiIrqConfig(TS_NVIC_REG_DEF *psNvic, uint8_t u8IrqNumber, uint8_t u8IrqPriority, bool bIqrState)
+{
+	if(bIqrState)
+	{
+		psNvic->ISER[(u8IrqNumber / 32U)] |= (1 << u8IrqNumber % 32U);
+	}
+	else
+	{
+		psNvic->ISER[(u8IrqNumber / 32U)] &= ~(1 << u8IrqNumber % 32U);
+	}
+
+	psNvic->IPR[u8IrqNumber / 4U] |= (u8IrqPriority << ((u8IrqNumber % 4U) * 4)) ;
+}
+
+/* ===========================================================================
+ * Function name: vDoSpiIrqHandling()
+ * Parameters   :
+ * 					TS_EXTI_REG_DEF *psExti - EXTI definition
+ * 					TS_SPI_HANDLE *psSpiHandle - SPI Handle
+ * Return       : void
+ * ===========================================================================
+ */
+
+void vDoSpiIrqHandling(TS_EXTI_REG_DEF *psExti, TS_SPI_HANDLE *psSpiHandle)
+{
+	if(psSpiHandle->psSpiBaseAddr->CR2 & (0x01 << 7U) &&
+	   psSpiHandle->psSpiBaseAddr->SR  & (0x01 << 1U))
+	{
+		vDoSpiTxeHandle(psSpiHandle);
+	}
+
+	if(psSpiHandle->psSpiBaseAddr->CR2 & (0x01 << 6U) &&
+	   psSpiHandle->psSpiBaseAddr->SR  & (0x01 << 0U))
+	{
+		vDoSpiRxneHandle(psSpiHandle);
+	}
+
+	if(psSpiHandle->psSpiBaseAddr->CR2 & (0x01 << 5U) &&
+	   psSpiHandle->psSpiBaseAddr->SR  & (0x01 << 6U))
+	{
+		vDoSpiOvrHandle(psSpiHandle);
+	}
+
+}
+
+/* SPI Peripheral control functions */
 
 /* ===========================================================================
  * Function name: vDoSpiPeriControl()
@@ -252,8 +445,6 @@ void vDoSpiPeriControl(TS_SPI_REG_DEF *psSpi, bool bState)
 	}
 }
 
-/* SPI SSI control function */
-
 /* ===========================================================================
  * Function name: vDoSpiSsiControl()
  * Parameters   :
@@ -273,4 +464,74 @@ void vDoSpiSsiControl(TS_SPI_REG_DEF *psSpi, bool bState)
 	{
 		psSpi->CR1 &= ~(0x01 << 8U);
 	}
+}
+
+/* ===========================================================================
+ * Function name: bDoGetSpiFlag()
+ * Parameters   :
+ * 					TS_SPI_REG_DEF *psSpi - SPI Base Address
+ * 					uint32_t u32SpiFlag - SPI Flag
+ * Return       : boolean - Status of flag
+ * ===========================================================================
+ */
+
+bool bDoGetSpiFlag(TS_SPI_REG_DEF *psSpi, uint32_t u32SpiFlag)
+{
+	return ((psSpi->SR & (0x01 << u32SpiFlag)) != 0x00);
+}
+
+/* ===========================================================================
+ * Function name: vDoSpiClearOvrFlag()
+ * Parameters   :
+ * 					TS_SPI_REG_DEF *psSpi - SPI Definition
+ * Return       : void
+ * ===========================================================================
+ */
+
+void vDoSpiClearOvrFlag(TS_SPI_REG_DEF *psSpi)
+{
+	uint32_t u32RegisterVal = 0;
+
+	/* Clear OVR flag */
+	u32RegisterVal = psSpi->DR;
+	u32RegisterVal = psSpi->SR;
+
+	/* Avoid unused variable warning */
+	(void)u32RegisterVal;
+}
+
+/* ===========================================================================
+ * Function name: vDoSpiCloseTransmission()
+ * Parameters   :
+ * 					TS_SPI_HANDLE *psSpiHandle - SPI Handle structure
+ * Return       : void
+ * ===========================================================================
+ */
+
+void vDoSpiCloseTransmission(TS_SPI_HANDLE *psSpiHandle)
+{
+	/* Disable TXE flag interrupts */
+	psSpiHandle->psSpiBaseAddr->CR2 &= ~(1 << 7U);
+	psSpiHandle->pu8SpiTxBuff = NULL;
+	psSpiHandle->u32SpiTxBuffLen = 0;
+
+	/* Inform the application */
+	psSpiHandle->eStateSpiBus = eStateSpiBusReady;
+}
+
+/* ===========================================================================
+ * Function name: vDoSpiCloseReception()
+ * Parameters   :
+ * 					TS_SPI_HANDLE *psSpiHandle - SPI Handle structure
+ * Return       : void
+ * ===========================================================================
+ */
+
+void vDoSpiCloseReception(TS_SPI_HANDLE *psSpiHandle)
+{
+	/* Disable RXNE flag interrupts */
+	psSpiHandle->psSpiBaseAddr->CR2 &= ~(1 << 6U);
+
+	/* Inform the application */
+	psSpiHandle->eStateSpiBus = eStateSpiBusReady;
 }

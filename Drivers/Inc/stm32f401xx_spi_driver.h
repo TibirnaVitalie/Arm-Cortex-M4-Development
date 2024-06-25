@@ -4,6 +4,23 @@
 /* Include external headers */
 #include "stm32f401xx.h"
 
+/* === SPIs possible events === */
+
+typedef enum
+{
+	eStatusEventSpiTxDone = 0,
+	eStatusEventSpiRxDone = 1,
+	eStatusEventSpiOvrErr = 2,
+	eStatusEventSpiCrcErr = 3,
+} TE_SPI_STATUS_EVENT;
+
+typedef enum
+{
+	eStateSpiBusReady  = 0,
+	eStateSpiBusBusyRx = 1,
+	eStateSpiBusBusyTx = 2,
+} TE_SPI_BUS_STATE;
+
 typedef struct
 {
 	uint8_t u8SpiDeviceMode;							/* SPI Device Mode */
@@ -18,15 +35,20 @@ typedef struct
 typedef struct
 {
 	TS_SPI_REG_DEF *psSpiBaseAddr;						/* SPI Base Address */
-	TS_SPI_CONFIG *sSpiConfig;							/* SPI configuration settings */
+	TS_SPI_CONFIG *psSpiConfig;							/* SPI configuration settings */
+	uint8_t *pu8SpiTxBuff;								/* SPI TX Buffer address */
+	uint8_t *pu8SpiRxBuff;								/* SPI RX Buffer address */
+	uint32_t u32SpiTxBuffLen;							/* SPI TX Buffer length */
+	uint32_t u32SpiRxBuffLen;							/* SPI RX Buffer length */
+	TE_SPI_BUS_STATE eStateSpiBus;						/* SPI Bus State */
 } TS_SPI_HANDLE;
 
 /* === SPIs possible modes === */
 
 /* SPI possible device modes */
 
-#define SPI_DEVICE_MOVE_SLAVE							0x00
-#define SPI_DEVICE_MOVE_MASTER							0x01
+#define SPI_DEVICE_MODE_SLAVE							0x00
+#define SPI_DEVICE_MODE_MASTER							0x01
 
 /* SPI BUS possible modes */
 
@@ -95,6 +117,11 @@ void vDoSpiDeIni(TS_SPI_REG_DEF *psSpi);
 void vDoSpiSendData(TS_SPI_REG_DEF *psSpi, uint8_t *pu8SpiTxBuff, uint32_t u32SpiDataLen);
 void vDoSpiReceiveData(TS_SPI_REG_DEF *psSpi, uint8_t *pu8SpiRxBuff, uint32_t u32SpiDataLen);
 
+/* Interrupts based SPI Data Send and Receive functions */
+
+TE_SPI_BUS_STATE vDoSpiSendDataIt(TS_SPI_HANDLE *psSpiHandle, uint8_t *pu8SpiTxBuff, uint32_t u32SpiDataLen);
+TE_SPI_BUS_STATE vDoSpiReceiveDataIt(TS_SPI_HANDLE *psSpiHandle, uint8_t *pu8SpiRxBuff, uint32_t u32SpiDataLen);
+
 /* SPI IRQ configuration and ISR handling functions */
 
 void vDoSpiIrqConfig(TS_NVIC_REG_DEF *psNvic, uint8_t u8IrqNumber, uint8_t u8IrqPriority, bool bIqrState);
@@ -104,5 +131,13 @@ void vDoSpiIrqHandling(TS_EXTI_REG_DEF *psExti, TS_SPI_HANDLE *psSpiHandle);
 
 void vDoSpiPeriControl(TS_SPI_REG_DEF *psSpi, bool bState);
 void vDoSpiSsiControl(TS_SPI_REG_DEF *psSpi, bool bState);
+bool bDoGetSpiFlag(TS_SPI_REG_DEF *psSpi, uint32_t u32SpiFlag);
+void vDoSpiClearOvrFlag(TS_SPI_REG_DEF *psSpi);
+void vDoSpiCloseTransmission(TS_SPI_HANDLE *psSpiHandle);
+void vDoSpiCloseReception(TS_SPI_HANDLE *psSpiHandle);
+
+/* === Events CallBacks === */
+
+void vDoSpiEventCallback(TS_SPI_HANDLE *psSpiHandle, TE_SPI_STATUS_EVENT eSpiStatusEvent);
 
 #endif /* INC_STM32F401XX_SPI_DRIVER_H_ */
