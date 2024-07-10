@@ -63,7 +63,7 @@ static inline void vDoI2CGpioConf(void)
 
 int main(void)
 {
-//	char user_data[] = "Hello world!!!";
+	char user_data[] = "Hello world!!!";
 
 	vDoI2CGpioConf();
 
@@ -84,7 +84,7 @@ int main(void)
 
 	while(1)
 	{
-
+		vDoI2CMasterSendData(&sI2CHandle, (uint8_t*) user_data, strlen(user_data), 0x44);
 		delay();
 	}
 }

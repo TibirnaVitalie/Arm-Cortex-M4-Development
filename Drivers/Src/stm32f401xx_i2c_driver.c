@@ -6,19 +6,23 @@
 
 /* === Local Functions === */
 
-static inline uint32_t u32vDoCalculatePclk1Value(void);
-static inline uint32_t u32vDoCalculatePllOutputValue(void);
+static inline uint32_t u32CalculatePclk1Value(void);
+static inline uint32_t u32CalculatePllOutputValue(void);
+
+static inline void vDoI2CGenerateStartCondition(TS_I2C_REG_DEF *psI2C);
+static inline void vDoI2CExecuteAddressPhase(TS_I2C_REG_DEF *psI2C, uint8_t u8SlaveAddr);
+static inline void vDoI2CGenerateStopCondition(TS_I2C_REG_DEF *psI2C);
 
 /* Peripheral clock 1 calculation function */
 
 /* ===========================================================================
- * Function name: u32vDoCalculatePclk1Value()
+ * Function name: u32CalculatePclk1Value()
  * Parameters   : void
  * Return       : uint32_t - Value of Pclk1
  * ===========================================================================
  */
 
-static inline uint32_t u32vDoCalculatePclk1Value(void)
+static inline uint32_t u32CalculatePclk1Value(void)
 {
 	uint8_t u8Apb1Presc = 0;
 	uint16_t u16AhbPresc = 0;
@@ -37,7 +41,7 @@ static inline uint32_t u32vDoCalculatePclk1Value(void)
 			break;
 
 		case 0x02:
-			u32SysSource = u32vDoCalculatePllOutputValue();
+			u32SysSource = u32CalculatePllOutputValue();
 			break;
 
 		default:
@@ -116,16 +120,75 @@ static inline uint32_t u32vDoCalculatePclk1Value(void)
 /* PLL Output calculation function */
 
 /* ===========================================================================
- * Function name: u32vDoCalculatePllOutputValue()
+ * Function name: u32CalculatePllOutputValue()
  * Parameters   : void
  * Return       : uint32_t - Value of PLL Output
  * ===========================================================================
  */
 
-static inline uint32_t u32vDoCalculatePllOutputValue(void)
+static inline uint32_t u32CalculatePllOutputValue(void)
 {
 	return 0x01;
 }
+
+/* I2C generate Start and Stop Conditions functions */
+
+/* ===========================================================================
+ * Function name: vDoI2CGenerateStartCondition()
+ * Parameters   : TS_I2C_REG_DEF *psI2C - I2C Base Address
+ * Return       : void
+ * ===========================================================================
+ */
+
+static inline void vDoI2CGenerateStartCondition(TS_I2C_REG_DEF *psI2C)
+{
+	psI2C->CR1 |= (0x01 << 8U);							/* Generate Start Condition		*/
+
+	while(!bDoGetI2CFlag(psI2C, I2C_SB_FLAG));			/* Confirm Start Bit			*/
+}
+
+/* ===========================================================================
+ * Function name: vDoI2CGenerateStopCondition()
+ * Parameters   : TS_I2C_REG_DEF *psI2C - I2C Base Address
+ * Return       : void
+ * ===========================================================================
+ */
+
+static inline void vDoI2CGenerateStopCondition(TS_I2C_REG_DEF *psI2C)
+{
+	psI2C->CR1 |= (0x01 << 9U);							/* Generate Stop Condition		*/
+}
+
+/* I2C execute Address phase function */
+
+/* ===========================================================================
+ * Function name: vDoI2CExecuteAddressPhase()
+ * Parameters   :
+ * 					TS_I2C_REG_DEF *psI2C - I2C Base Address
+ * 					uint8_t u8SlaveAddr - I2C Slave Address
+ * Return       : void
+ * ===========================================================================
+ */
+
+static inline void vDoI2CExecuteAddressPhase(TS_I2C_REG_DEF *psI2C, uint8_t u8SlaveAddr)
+{
+	uint32_t u32RegisterVal = 0;
+	uint8_t u8DrValue = ((u8SlaveAddr & 0x7F) << 1U);	/* Shift address by 1 bit		*/
+
+	u8DrValue &= ~(0x01 << 0U);							/* Reset R/W bit (set write)	*/
+
+	psI2C->DR = (uint32_t)u8DrValue;
+
+	while(!bDoGetI2CFlag(psI2C, I2C_ADDR_FLAG));		/* Confirm Address sent			*/
+
+	/* Clear ADDR Flag by reading SR1 and SR2 */
+	u32RegisterVal = psI2C->SR[0];
+	u32RegisterVal = psI2C->SR[1];
+
+	/* Avoid unused variable warning */
+	(void)u32RegisterVal;
+}
+
 
 /* === Global Functions === */
 
@@ -186,7 +249,7 @@ void vDoI2CPeriClockControl(TS_I2C_REG_DEF *psI2C, bool bState)
 void vDoI2CIni(TS_I2C_HANDLE *psI2CHandle)
 {
 	uint16_t u16CcrValue = 0;
-	uint8_t u32Pclk1 = u32vDoCalculatePclk1Value();
+	uint8_t u32Pclk1 = u32CalculatePclk1Value();
 	uint8_t u8Pclk1Cr2 = ((u32Pclk1 / 1000000U) & 0x3F);
 	uint8_t u8AddrMode = (psI2CHandle->psI2CConfig->u8I2CAddrMode & 0x01);
 
@@ -272,6 +335,50 @@ void vDoI2CDeIni(TS_I2C_REG_DEF *psI2C)
 	}
 }
 
+/* I2C Master Data Send and Receive functions */
+
+/* ===========================================================================
+ * Function name: vDoI2CMasterSendData()
+ * Parameters   :
+ * 					TS_I2C_HANDLE *psI2CHandle - I2C Handle structure
+ * 					uint8_t *pu8I2CTxBuff - Address of TX Buffer
+ * 					uint32_t u32I2CDataLen - I2C TX Buffer length
+ * 					uint8_t u8SlaveAddr - I2C Slave Address
+ * Return       : void
+ * ===========================================================================
+ */
+
+void vDoI2CMasterSendData(TS_I2C_HANDLE *psI2CHandle, uint8_t *pu8I2CTxBuff, uint32_t u32I2CDataLen, uint8_t u8SlaveAddr)
+{
+	static uint32_t u32I2CLen ;
+
+	/* Generate the Start Condition */
+	vDoI2CGenerateStartCondition(psI2CHandle->psI2CBaseAddr);
+
+	/* Execute Address Phase */
+	vDoI2CExecuteAddressPhase(psI2CHandle->psI2CBaseAddr, u8SlaveAddr);
+
+	/* Send data */
+
+
+	for(u32I2CLen = 0; u32I2CLen < u32I2CDataLen ; ++u32I2CLen)
+	{
+		/* Wait until TX buffer is not empty */
+		while(!bDoGetI2CFlag(psI2CHandle->psI2CBaseAddr, I2C_TXE_FLAG));
+
+		psI2CHandle->psI2CBaseAddr->DR = *pu8I2CTxBuff;
+
+		pu8I2CTxBuff++;
+	}
+
+	/* Wait until TX buffer is not empty */
+	while(!bDoGetI2CFlag(psI2CHandle->psI2CBaseAddr, I2C_TXE_FLAG));
+
+	/* Wait until Byte Transfer is not finished */
+	while(!bDoGetI2CFlag(psI2CHandle->psI2CBaseAddr, I2C_BTF_FLAG));
+
+}
+
 /* I2C Peripheral control functions */
 
 /* ===========================================================================
@@ -306,5 +413,5 @@ void vDoI2CPeriControl(TS_I2C_REG_DEF *psI2C, bool bState)
 
 bool bDoGetI2CFlag(TS_I2C_REG_DEF *psI2C, uint32_t u32I2CFlag)
 {
-	return ((psI2C->SR[(u32I2CFlag / 32)] & (0x01 << (u32I2CFlag % 32))) != 0x00);
+	return ((psI2C->SR[(u32I2CFlag / 16)] & (0x01 << (u32I2CFlag % 16))) != 0x00);
 }
