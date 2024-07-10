@@ -1,0 +1,7 @@
+../Drivers/Src/stm32f401xx_i2c_driver.c:21:24:u32vDoCalculatePclk1Value	24	static
+../Drivers/Src/stm32f401xx_i2c_driver.c:125:24:u32vDoCalculatePllOutputValue	4	static
+../Drivers/Src/stm32f401xx_i2c_driver.c:143:6:vDoI2CPeriClockControl	16	static
+../Drivers/Src/stm32f401xx_i2c_driver.c:186:6:vDoI2CIni	24	static
+../Drivers/Src/stm32f401xx_i2c_driver.c:259:6:vDoI2CDeIni	16	static
+../Drivers/Src/stm32f401xx_i2c_driver.c:286:6:vDoI2CPeriControl	16	static
+../Drivers/Src/stm32f401xx_i2c_driver.c:307:6:bDoGetI2CFlag	16	static

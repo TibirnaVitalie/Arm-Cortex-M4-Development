@@ -92,8 +92,7 @@ typedef struct
 	volatile uint32_t OAR1;								/* Address offset: 0x08 */
 	volatile uint32_t OAR2;								/* Address offset: 0x0C */
 	volatile uint32_t DR;								/* Address offset: 0x10 */
-	volatile uint32_t SR1;								/* Address offset: 0x14 */
-	volatile uint32_t SR2;								/* Address offset: 0x18 */
+	volatile uint32_t SR[2];							/* Address offset: 0x14 and 0x18 */
 	volatile uint32_t CCR;								/* Address offset: 0x1C */
 	volatile uint32_t TRICE;							/* Address offset: 0x20 */
 	volatile uint32_t FLTR;								/* Address offset: 0x24 */
@@ -261,123 +260,130 @@ typedef struct
 
 /* GPIOs Clocks enable macros */
 
-#define GPIOA_PCKL_EN()				(RCC->AHB1ENR |= (1 << 0))		/* GPIO A Peripheral clock enable in RCC register */
-#define GPIOB_PCKL_EN()				(RCC->AHB1ENR |= (1 << 1))		/* GPIO B Peripheral clock enable in RCC register */
-#define GPIOC_PCKL_EN()				(RCC->AHB1ENR |= (1 << 2))		/* GPIO C Peripheral clock enable in RCC register */
-#define GPIOD_PCKL_EN()				(RCC->AHB1ENR |= (1 << 3))		/* GPIO D Peripheral clock enable in RCC register */
-#define GPIOE_PCKL_EN()				(RCC->AHB1ENR |= (1 << 4))		/* GPIO E Peripheral clock enable in RCC register */
-#define GPIOH_PCKL_EN()				(RCC->AHB1ENR |= (1 << 7))		/* GPIO H Peripheral clock enable in RCC register */
+#define GPIOA_PCKL_EN()				(RCC->AHB1ENR |= (1 << 0U))		/* GPIO A Peripheral clock enable in RCC register */
+#define GPIOB_PCKL_EN()				(RCC->AHB1ENR |= (1 << 1U))		/* GPIO B Peripheral clock enable in RCC register */
+#define GPIOC_PCKL_EN()				(RCC->AHB1ENR |= (1 << 2U))		/* GPIO C Peripheral clock enable in RCC register */
+#define GPIOD_PCKL_EN()				(RCC->AHB1ENR |= (1 << 3U))		/* GPIO D Peripheral clock enable in RCC register */
+#define GPIOE_PCKL_EN()				(RCC->AHB1ENR |= (1 << 4U))		/* GPIO E Peripheral clock enable in RCC register */
+#define GPIOH_PCKL_EN()				(RCC->AHB1ENR |= (1 << 7U))		/* GPIO H Peripheral clock enable in RCC register */
 
 /* I2Cs Clocks enable macros */
 
-#define I2C1_PCKL_EN()				(RCC->APB1ENR |= (1 << 21))		/* I2C 1 Peripheral clock enable in RCC register */
-#define I2C2_PCKL_EN()				(RCC->APB1ENR |= (1 << 22))		/* I2C 2 Peripheral clock enable in RCC register */
-#define I2C3_PCKL_EN()				(RCC->APB1ENR |= (1 << 23))		/* I2C 3 Peripheral clock enable in RCC register */
+#define I2C1_PCKL_EN()				(RCC->APB1ENR |= (1 << 21U))	/* I2C 1 Peripheral clock enable in RCC register */
+#define I2C2_PCKL_EN()				(RCC->APB1ENR |= (1 << 22U))	/* I2C 2 Peripheral clock enable in RCC register */
+#define I2C3_PCKL_EN()				(RCC->APB1ENR |= (1 << 23U))	/* I2C 3 Peripheral clock enable in RCC register */
 
 /* SPIs Clocks enable macros */
 
-#define SPI1_PCKL_EN()				(RCC->APB2ENR |= (1 << 12))		/* SPI 1 Peripheral clock enable in RCC register */
-#define SPI2_PCKL_EN()				(RCC->APB1ENR |= (1 << 14))		/* SPI 2 Peripheral clock enable in RCC register */
-#define SPI3_PCKL_EN()				(RCC->APB1ENR |= (1 << 15))		/* SPI 3 Peripheral clock enable in RCC register */
-#define SPI4_PCKL_EN()				(RCC->APB2ENR |= (1 << 13))		/* SPI 4 Peripheral clock enable in RCC register */
+#define SPI1_PCKL_EN()				(RCC->APB2ENR |= (1 << 12U))	/* SPI 1 Peripheral clock enable in RCC register */
+#define SPI2_PCKL_EN()				(RCC->APB1ENR |= (1 << 14U))	/* SPI 2 Peripheral clock enable in RCC register */
+#define SPI3_PCKL_EN()				(RCC->APB1ENR |= (1 << 15U))	/* SPI 3 Peripheral clock enable in RCC register */
+#define SPI4_PCKL_EN()				(RCC->APB2ENR |= (1 << 13U))	/* SPI 4 Peripheral clock enable in RCC register */
 
 /* USARTs Clocks enable macros */
 
-#define USART1_PCKL_EN()			(RCC->APB2ENR |= (1 << 4))		/* USART 1 Peripheral clock enable in RCC register */
-#define USART2_PCKL_EN()			(RCC->APB1ENR |= (1 << 17))		/* USART 2 Peripheral clock enable in RCC register */
-#define USART6_PCKL_EN()			(RCC->APB2ENR |= (1 << 5))		/* USART 6 Peripheral clock enable in RCC register */
+#define USART1_PCKL_EN()			(RCC->APB2ENR |= (1 << 4U))		/* USART 1 Peripheral clock enable in RCC register */
+#define USART2_PCKL_EN()			(RCC->APB1ENR |= (1 << 17U))	/* USART 2 Peripheral clock enable in RCC register */
+#define USART6_PCKL_EN()			(RCC->APB2ENR |= (1 << 5U))		/* USART 6 Peripheral clock enable in RCC register */
 
 /* SYSCFG Clock enable macro */
 
-#define SYSCFG_PCKL_EN()			(RCC->APB2ENR |= (1 << 14))		/* SYSCFG Peripheral clock enable in RCC register */
+#define SYSCFG_PCKL_EN()			(RCC->APB2ENR |= (1 << 14U))	/* SYSCFG Peripheral clock enable in RCC register */
 
 /* === Peripheral Clocks disable macros === */
 
 /* GPIOs Clocks disable macros */
 
-#define GPIOA_PCKL_DI()				(RCC->AHB1ENR &= ~(1 << 0))		/* GPIO A Peripheral clock disable in RCC register */
-#define GPIOB_PCKL_DI()				(RCC->AHB1ENR &= ~(1 << 1))		/* GPIO B Peripheral clock disable in RCC register */
-#define GPIOC_PCKL_DI()				(RCC->AHB1ENR &= ~(1 << 2))		/* GPIO C Peripheral clock disable in RCC register */
-#define GPIOD_PCKL_DI()				(RCC->AHB1ENR &= ~(1 << 3))		/* GPIO D Peripheral clock disable in RCC register */
-#define GPIOE_PCKL_DI()				(RCC->AHB1ENR &= ~(1 << 4))		/* GPIO E Peripheral clock disable in RCC register */
-#define GPIOH_PCKL_DI()				(RCC->AHB1ENR &= ~(1 << 7))		/* GPIO H Peripheral clock disable in RCC register */
+#define GPIOA_PCKL_DI()				(RCC->AHB1ENR &= ~(1 << 0U))	/* GPIO A Peripheral clock disable in RCC register */
+#define GPIOB_PCKL_DI()				(RCC->AHB1ENR &= ~(1 << 1U))	/* GPIO B Peripheral clock disable in RCC register */
+#define GPIOC_PCKL_DI()				(RCC->AHB1ENR &= ~(1 << 2U))	/* GPIO C Peripheral clock disable in RCC register */
+#define GPIOD_PCKL_DI()				(RCC->AHB1ENR &= ~(1 << 3U))	/* GPIO D Peripheral clock disable in RCC register */
+#define GPIOE_PCKL_DI()				(RCC->AHB1ENR &= ~(1 << 4U))	/* GPIO E Peripheral clock disable in RCC register */
+#define GPIOH_PCKL_DI()				(RCC->AHB1ENR &= ~(1 << 7U))	/* GPIO H Peripheral clock disable in RCC register */
 
 /* I2Cs Clocks disable macros */
 
-#define I2C1_PCKL_DI()				(RCC->APB1ENR &= ~(1 << 21))	/* I2C 1 Peripheral clock disable in RCC register */
-#define I2C2_PCKL_DI()				(RCC->APB1ENR &= ~(1 << 22))	/* I2C 2 Peripheral clock disable in RCC register */
-#define I2C3_PCKL_DI()				(RCC->APB1ENR &= ~(1 << 23))	/* I2C 3 Peripheral clock disable in RCC register */
+#define I2C1_PCKL_DI()				(RCC->APB1ENR &= ~(1 << 21U))	/* I2C 1 Peripheral clock disable in RCC register */
+#define I2C2_PCKL_DI()				(RCC->APB1ENR &= ~(1 << 22U))	/* I2C 2 Peripheral clock disable in RCC register */
+#define I2C3_PCKL_DI()				(RCC->APB1ENR &= ~(1 << 23U))	/* I2C 3 Peripheral clock disable in RCC register */
 
 /* SPIs Clocks disable macros */
 
-#define SPI1_PCKL_DI()				(RCC->APB2ENR &= ~(1 << 12))	/* SPI 1 Peripheral clock disable in RCC register */
-#define SPI2_PCKL_DI()				(RCC->APB1ENR &= ~(1 << 14))	/* SPI 2 Peripheral clock disable in RCC register */
-#define SPI3_PCKL_DI()				(RCC->APB1ENR &= ~(1 << 15))	/* SPI 3 Peripheral clock disable in RCC register */
-#define SPI4_PCKL_DI()				(RCC->APB2ENR &= ~(1 << 13))	/* SPI 4 Peripheral clock disable in RCC register */
+#define SPI1_PCKL_DI()				(RCC->APB2ENR &= ~(1 << 12U))	/* SPI 1 Peripheral clock disable in RCC register */
+#define SPI2_PCKL_DI()				(RCC->APB1ENR &= ~(1 << 14U))	/* SPI 2 Peripheral clock disable in RCC register */
+#define SPI3_PCKL_DI()				(RCC->APB1ENR &= ~(1 << 15U))	/* SPI 3 Peripheral clock disable in RCC register */
+#define SPI4_PCKL_DI()				(RCC->APB2ENR &= ~(1 << 13U))	/* SPI 4 Peripheral clock disable in RCC register */
 
 /* USARTs Clocks disable macros */
 
-#define USART1_PCKL_DI()			(RCC->APB2ENR &= ~(1 << 4))		/* USART 1 Peripheral clock disable in RCC register */
-#define USART2_PCKL_DI()			(RCC->APB1ENR &= ~(1 << 17))	/* USART 2 Peripheral clock disable in RCC register */
-#define USART6_PCKL_DI()			(RCC->APB2ENR &= ~(1 << 5))		/* USART 6 Peripheral clock disable in RCC register */
+#define USART1_PCKL_DI()			(RCC->APB2ENR &= ~(1 << 4U))	/* USART 1 Peripheral clock disable in RCC register */
+#define USART2_PCKL_DI()			(RCC->APB1ENR &= ~(1 << 17U))	/* USART 2 Peripheral clock disable in RCC register */
+#define USART6_PCKL_DI()			(RCC->APB2ENR &= ~(1 << 5U))	/* USART 6 Peripheral clock disable in RCC register */
 
 /* SYSCFG Clock disable macro */
 
-#define SYSCFG_PCKL_DI()			(RCC->APB2ENR &= ~(1 << 14))	/* SYSCFG Peripheral clock disable in RCC register */
+#define SYSCFG_PCKL_DI()			(RCC->APB2ENR &= ~(1 << 14U))	/* SYSCFG Peripheral clock disable in RCC register */
 
 /* === Peripherals registers reset macros === */
 
 /* GPIOs reset macros */
 
-#define GPIOA_REG_RESET()			{RCC->AHB1RSTR |= (1 << 0); RCC->AHB1RSTR &= ~(1 << 0);}		/* Reset GPIO A  in RCC register */
-#define GPIOB_REG_RESET()			{RCC->AHB1RSTR |= (1 << 1); RCC->AHB1RSTR &= ~(1 << 1);}		/* Reset GPIO B  in RCC register */
-#define GPIOC_REG_RESET()			{RCC->AHB1RSTR |= (1 << 2); RCC->AHB1RSTR &= ~(1 << 2);}		/* Reset GPIO C  in RCC register */
-#define GPIOD_REG_RESET()			{RCC->AHB1RSTR |= (1 << 3); RCC->AHB1RSTR &= ~(1 << 3);}		/* Reset GPIO D  in RCC register */
-#define GPIOE_REG_RESET()			{RCC->AHB1RSTR |= (1 << 4); RCC->AHB1RSTR &= ~(1 << 4);}		/* Reset GPIO E  in RCC register */
-#define GPIOH_REG_RESET()			{RCC->AHB1RSTR |= (1 << 7); RCC->AHB1RSTR &= ~(1 << 7);}		/* Reset GPIO H  in RCC register */
+#define GPIOA_REG_RESET()			{RCC->AHB1RSTR |= (1 << 0U); RCC->AHB1RSTR &= ~(1 << 0U);}		/* Reset GPIO A  in RCC register */
+#define GPIOB_REG_RESET()			{RCC->AHB1RSTR |= (1 << 1U); RCC->AHB1RSTR &= ~(1 << 1U);}		/* Reset GPIO B  in RCC register */
+#define GPIOC_REG_RESET()			{RCC->AHB1RSTR |= (1 << 2U); RCC->AHB1RSTR &= ~(1 << 2U);}		/* Reset GPIO C  in RCC register */
+#define GPIOD_REG_RESET()			{RCC->AHB1RSTR |= (1 << 3U); RCC->AHB1RSTR &= ~(1 << 3U);}		/* Reset GPIO D  in RCC register */
+#define GPIOE_REG_RESET()			{RCC->AHB1RSTR |= (1 << 4U); RCC->AHB1RSTR &= ~(1 << 4U);}		/* Reset GPIO E  in RCC register */
+#define GPIOH_REG_RESET()			{RCC->AHB1RSTR |= (1 << 7U); RCC->AHB1RSTR &= ~(1 << 7U);}		/* Reset GPIO H  in RCC register */
 
 /* SPIs reset macros */
 
-#define SPI1_REG_RESET()			{RCC->APB2RSTR |= (1 << 12); RCC->APB2RSTR &= ~(1 << 12);}		/* Reset SPI 1  in RCC register */
-#define SPI2_REG_RESET()			{RCC->APB1RSTR |= (1 << 14); RCC->APB1RSTR &= ~(1 << 14);}		/* Reset SPI 2  in RCC register */
-#define SPI3_REG_RESET()			{RCC->APB1RSTR |= (1 << 15); RCC->APB1RSTR &= ~(1 << 15);}		/* Reset SPI 3  in RCC register */
-#define SPI4_REG_RESET()			{RCC->APB2RSTR |= (1 << 13); RCC->APB2RSTR &= ~(1 << 13);}		/* Reset SPI 4  in RCC register */
+#define SPI1_REG_RESET()			{RCC->APB2RSTR |= (1 << 12U); RCC->APB2RSTR &= ~(1 << 12U);}	/* Reset SPI 1  in RCC register */
+#define SPI2_REG_RESET()			{RCC->APB1RSTR |= (1 << 14U); RCC->APB1RSTR &= ~(1 << 14U);}	/* Reset SPI 2  in RCC register */
+#define SPI3_REG_RESET()			{RCC->APB1RSTR |= (1 << 15U); RCC->APB1RSTR &= ~(1 << 15U);}	/* Reset SPI 3  in RCC register */
+#define SPI4_REG_RESET()			{RCC->APB2RSTR |= (1 << 13U); RCC->APB2RSTR &= ~(1 << 13U);}	/* Reset SPI 4  in RCC register */
+
+/* I2Cs reset macros */
+
+#define I2C1_REG_RESET()			{RCC->APB2RSTR |= (1 << 21U); RCC->APB2RSTR &= ~(1 << 21U);}	/* Reset I2C 1  in RCC register */
+#define I2C2_REG_RESET()			{RCC->APB2RSTR |= (1 << 22U); RCC->APB2RSTR &= ~(1 << 22U);}	/* Reset I2C 2  in RCC register */
+#define I2C3_REG_RESET()			{RCC->APB2RSTR |= (1 << 23U); RCC->APB2RSTR &= ~(1 << 23U);}	/* Reset I2C 3  in RCC register */
 
 /* === IRQ(Interrupt Request) Numbers === */
 
-#define IRQ_NO_EXTI0				6
-#define IRQ_NO_EXTI1				7
-#define IRQ_NO_EXTI2				8
-#define IRQ_NO_EXTI3				9
-#define IRQ_NO_EXTI4				10
-#define IRQ_NO_EXTI9_5				23
-#define IRQ_NO_EXTI15_10			40
+#define IRQ_NO_EXTI0				6U
+#define IRQ_NO_EXTI1				7U
+#define IRQ_NO_EXTI2				8U
+#define IRQ_NO_EXTI3				9U
+#define IRQ_NO_EXTI4				10U
+#define IRQ_NO_EXTI9_5				23U
+#define IRQ_NO_EXTI15_10			40U
 
-#define IRQ_NO_SPI1					35
-#define IRQ_NO_SPI2					36
-#define IRQ_NO_SPI3					51
-#define IRQ_NO_SPI4					84
+#define IRQ_NO_SPI1					35U
+#define IRQ_NO_SPI2					36U
+#define IRQ_NO_SPI3					51U
+#define IRQ_NO_SPI4					84U
 
-#define NVIC_IRQ_PRI0				0
-#define NVIC_IRQ_PRI1				1
-#define NVIC_IRQ_PRI2				2
-#define NVIC_IRQ_PRI3				3
-#define NVIC_IRQ_PRI4				4
-#define NVIC_IRQ_PRI5				5
-#define NVIC_IRQ_PRI6				6
-#define NVIC_IRQ_PRI7				7
-#define NVIC_IRQ_PRI8				8
-#define NVIC_IRQ_PRI9				9
-#define NVIC_IRQ_PRI10				10
-#define NVIC_IRQ_PRI11				11
-#define NVIC_IRQ_PRI12				12
-#define NVIC_IRQ_PRI13				13
-#define NVIC_IRQ_PRI14				14
-#define NVIC_IRQ_PRI15				15
+#define NVIC_IRQ_PRI0				0U
+#define NVIC_IRQ_PRI1				1U
+#define NVIC_IRQ_PRI2				2U
+#define NVIC_IRQ_PRI3				3U
+#define NVIC_IRQ_PRI4				4U
+#define NVIC_IRQ_PRI5				5U
+#define NVIC_IRQ_PRI6				6U
+#define NVIC_IRQ_PRI7				7U
+#define NVIC_IRQ_PRI8				8U
+#define NVIC_IRQ_PRI9				9U
+#define NVIC_IRQ_PRI10				10U
+#define NVIC_IRQ_PRI11				11U
+#define NVIC_IRQ_PRI12				12U
+#define NVIC_IRQ_PRI13				13U
+#define NVIC_IRQ_PRI14				14U
+#define NVIC_IRQ_PRI15				15U
 
 /* === Include drivers headers === */
 
 #include "stm32f401xx_gpio_driver.h"
 #include "stm32f401xx_spi_driver.h"
+#include "stm32f401xx_i2c_driver.h"
 
 #endif /* INC_STM32F401XX_H_ */

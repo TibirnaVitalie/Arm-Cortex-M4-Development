@@ -26,143 +26,65 @@ void delay(void)
 	}
 }
 
-static inline void vDoSpiGpioConf(void);
-static inline void vDoSpiHandleConf(void);
+static inline void vDoI2CGpioConf(void);
 
-static inline void vDoSpiGpioConf(void)
+static inline void vDoI2CGpioConf(void)
 {
-	TS_GPIO_CONFIG sSpiNssConf;
-	sSpiNssConf.u8GpioPinNum = 12U;
-	sSpiNssConf.u8GpioPinMode = GPIO_MODE_ALT_FUNC;
-	sSpiNssConf.u8GpioPinOPType = GPIO_OUT_MODE_PP;
-	sSpiNssConf.u8GpioPinPuPdControl = GPIO_PUPD_NU_ND;
-	sSpiNssConf.u8GpioPinSpeed = GPIO_OUT_SPEED_VERY_HIGH;
-	sSpiNssConf.u8GpioPinAltFunMode = 0x05;
+	TS_GPIO_CONFIG sGpioI2C1SclConf;
+	sGpioI2C1SclConf.u8GpioPinNum = GPIO_PIN_NUM_8;
+	sGpioI2C1SclConf.u8GpioPinMode = GPIO_MODE_ALT_FUNC;
+	sGpioI2C1SclConf.u8GpioPinAltFunMode = GPIO_AF_NUM_4;
+	sGpioI2C1SclConf.u8GpioPinOPType = GPIO_OUT_MODE_OD;
+	sGpioI2C1SclConf.u8GpioPinPuPdControl = GPIO_PUPD_NU_ND;
+	sGpioI2C1SclConf.u8GpioPinSpeed = GPIO_OUT_SPEED_VERY_HIGH;
 
-	TS_GPIO_CONFIG sSpiSckConf;
-	sSpiSckConf.u8GpioPinNum = 13U;
-	sSpiSckConf.u8GpioPinMode = GPIO_MODE_ALT_FUNC;
-	sSpiSckConf.u8GpioPinOPType = GPIO_OUT_MODE_PP;
-	sSpiSckConf.u8GpioPinPuPdControl = GPIO_PUPD_NU_ND;
-	sSpiSckConf.u8GpioPinSpeed = GPIO_OUT_SPEED_VERY_HIGH;
-	sSpiSckConf.u8GpioPinAltFunMode = 0x05;
+	TS_GPIO_CONFIG sGpioI2C1SdaConf;
+	sGpioI2C1SdaConf.u8GpioPinNum = GPIO_PIN_NUM_9;
+	sGpioI2C1SdaConf.u8GpioPinMode = GPIO_MODE_ALT_FUNC;
+	sGpioI2C1SclConf.u8GpioPinAltFunMode = GPIO_AF_NUM_4;
+	sGpioI2C1SdaConf.u8GpioPinOPType = GPIO_OUT_MODE_OD;
+	sGpioI2C1SdaConf.u8GpioPinPuPdControl = GPIO_PUPD_NU_ND;
+	sGpioI2C1SdaConf.u8GpioPinSpeed = GPIO_OUT_SPEED_VERY_HIGH;
 
-	TS_GPIO_CONFIG sSpiMisoConf;
-	sSpiMisoConf.u8GpioPinNum = 14U;
-	sSpiMisoConf.u8GpioPinMode = GPIO_MODE_ALT_FUNC;
-	sSpiMisoConf.u8GpioPinOPType = GPIO_OUT_MODE_PP;
-	sSpiMisoConf.u8GpioPinPuPdControl = GPIO_PUPD_NU_ND;
-	sSpiMisoConf.u8GpioPinSpeed = GPIO_OUT_SPEED_VERY_HIGH;
-	sSpiMisoConf.u8GpioPinAltFunMode = 0x05;
+	TS_GPIO_HANDLE sGpioI2C1Scl;
+	sGpioI2C1Scl.psGpioBaseAddr = GPIOB;
+	sGpioI2C1Scl.sGpioPinConfig = &sGpioI2C1SclConf;
 
-	TS_GPIO_CONFIG sSpiMosiConf;
-	sSpiMosiConf.u8GpioPinNum = 15U;
-	sSpiMosiConf.u8GpioPinMode = GPIO_MODE_ALT_FUNC;
-	sSpiMosiConf.u8GpioPinOPType = GPIO_OUT_MODE_PP;
-	sSpiMosiConf.u8GpioPinPuPdControl = GPIO_PUPD_NU_ND;
-	sSpiMosiConf.u8GpioPinSpeed = GPIO_OUT_SPEED_VERY_HIGH;
-	sSpiMosiConf.u8GpioPinAltFunMode = 0x05;
-
-	TS_GPIO_HANDLE sSpiNss;
-	sSpiNss.psGpioBaseAddr = GPIOB;
-	sSpiNss.sGpioPinConfig = &sSpiNssConf;
-
-	TS_GPIO_HANDLE sSpiSck;
-	sSpiSck.psGpioBaseAddr = GPIOB;
-	sSpiSck.sGpioPinConfig = &sSpiSckConf;
-
-	TS_GPIO_HANDLE sSpiMiso;
-	sSpiMiso.psGpioBaseAddr = GPIOB;
-	sSpiMiso.sGpioPinConfig = &sSpiMisoConf;
-
-	TS_GPIO_HANDLE sSpiMosi;
-	sSpiMosi.psGpioBaseAddr = GPIOB;
-	sSpiMosi.sGpioPinConfig = &sSpiMosiConf;
-
+	TS_GPIO_HANDLE sGpioI2C1Sda;
+	sGpioI2C1Sda.psGpioBaseAddr = GPIOB;
+	sGpioI2C1Sda.sGpioPinConfig = &sGpioI2C1SdaConf;
 
 	vDoGpioPeriClockControl(GPIOB, true);
 
-	vDoGpioIni(&sSpiNss);
-	vDoGpioIni(&sSpiSck);
-	vDoGpioIni(&sSpiMiso);
-	vDoGpioIni(&sSpiMosi);
+	vDoGpioIni(&sGpioI2C1Scl);
+	vDoGpioIni(&sGpioI2C1Sda);
 }
-static inline void vDoSpiHandleConf(void)
-{
-	TS_SPI_CONFIG sSpiConf;
-	sSpiConf.u8SpiDeviceMode = SPI_DEVICE_MOVE_MASTER;
-	sSpiConf.u8SpiBusConfig = SPI_BUS_CONFIG_FD;
-	sSpiConf.u8SpiSclkSpeed = SPI_SPEED_PCLK_DIV256;
-	sSpiConf.u8SpiDff = SPI_DFF_8BITS;
-	sSpiConf.u8SpiCpol = SPI_CPOL_LOW;
-	sSpiConf.u8SpiCpha = SPI_CPHA_LOW;
-	sSpiConf.u8SpiSsm = SPI_SSM_SW;
 
-	TS_SPI_HANDLE sSpiHandle;
-	sSpiHandle.psSpiBaseAddr = SPI2;
-	sSpiHandle.psSpiConfig = &sSpiConf;
-
-	vDoSpiPeriClockControl(SPI2, true);
-
-	vDoSpiIni(&sSpiHandle);
-}
 
 int main(void)
 {
-	char user_data[] = "Hello world!!!";
+//	char user_data[] = "Hello world!!!";
 
-	vDoSpiGpioConf();
+	vDoI2CGpioConf();
 
-	TS_SPI_CONFIG sSpiConf;
-	sSpiConf.u8SpiDeviceMode = SPI_DEVICE_MOVE_MASTER;
-	sSpiConf.u8SpiBusConfig = SPI_BUS_CONFIG_FD;
-	sSpiConf.u8SpiSclkSpeed = SPI_SPEED_PCLK_DIV256;
-	sSpiConf.u8SpiDff = SPI_DFF_8BITS;
-	sSpiConf.u8SpiCpol = SPI_CPOL_LOW;
-	sSpiConf.u8SpiCpha = SPI_CPHA_LOW;
-	sSpiConf.u8SpiSsm = SPI_SSM_SW;
+	TS_I2C_CONFIG sI2CConf;
+	sI2CConf.u328I2CSclSpeed = I2C_SCL_SPEED_SM;
+	sI2CConf.u16I2CDeviceAddr = 0x77;
+	sI2CConf.u8I2CAddrMode = I2C_ADDR_MODE_7;
+	sI2CConf.u8I2CAckControl = I2C_ACK_CONTROL_ENABLE;
+	sI2CConf.u8I2CFmDutyCycle = I2C_FM_DUTY_CYCLE_2;
 
-	TS_SPI_HANDLE sSpiHandle;
-	sSpiHandle.psSpiBaseAddr = SPI2;
-	sSpiHandle.psSpiConfig = &sSpiConf;
-	sSpiHandle.eStateSpiBus = eStateSpiBusReady;
+	TS_I2C_HANDLE sI2CHandle;
+	sI2CHandle.psI2CBaseAddr = I2C1;
+	sI2CHandle.psI2CConfig = &sI2CConf;
 
-	vDoSpiPeriClockControl(SPI2, true);
+	vDoI2CPeriClockControl(I2C1, true);
 
-	vDoSpiIni(&sSpiHandle);
-
-	vDoSpiIrqConfig(NVIC, IRQ_NO_SPI2, NVIC_IRQ_PRI15, true);
-
-	vDoSpiSsiControl(SPI2, true);
-
-	vDoSpiPeriControl(SPI2, true);
+	vDoI2CIni(&sI2CHandle);
 
 	while(1)
 	{
-		vDoSpiSendDataIt(&sSpiHandle, (uint8_t*) user_data, strlen(user_data));
+
 		delay();
 	}
-}
-
-void vDoSpiEventCallback(TS_SPI_HANDLE *psSpiHandle, TE_SPI_STATUS_EVENT eSpiStatusEvent)
-{
-
-}
-
-void SPI2_IRQHandler(void)
-{
-	TS_SPI_CONFIG sSpiConf;
-		sSpiConf.u8SpiDeviceMode = SPI_DEVICE_MOVE_MASTER;
-		sSpiConf.u8SpiBusConfig = SPI_BUS_CONFIG_FD;
-		sSpiConf.u8SpiSclkSpeed = SPI_SPEED_PCLK_DIV256;
-		sSpiConf.u8SpiDff = SPI_DFF_8BITS;
-		sSpiConf.u8SpiCpol = SPI_CPOL_LOW;
-		sSpiConf.u8SpiCpha = SPI_CPHA_LOW;
-		sSpiConf.u8SpiSsm = SPI_SSM_SW;
-
-		TS_SPI_HANDLE sSpiHandle;
-		sSpiHandle.psSpiBaseAddr = SPI2;
-		sSpiHandle.psSpiConfig = &sSpiConf;
-		sSpiHandle.eStateSpiBus = eStateSpiBusReady;
-	vDoSpiIrqHandling(EXTI, &sSpiHandle);
 }

@@ -69,6 +69,25 @@ typedef struct
 #define GPIO_PUPD_PU									0x01
 #define GPIO_PUPD_PD									0x02
 
+/* GPIO Alternate Functions possible numbers */
+
+#define GPIO_AF_NUM_0									0x00
+#define GPIO_AF_NUM_1									0x01
+#define GPIO_AF_NUM_2									0x02
+#define GPIO_AF_NUM_3									0x03
+#define GPIO_AF_NUM_4									0x04
+#define GPIO_AF_NUM_5									0x05
+#define GPIO_AF_NUM_6									0x06
+#define GPIO_AF_NUM_7									0x07
+#define GPIO_AF_NUM_8									0x08
+#define GPIO_AF_NUM_9									0x09
+#define GPIO_AF_NUM_10									0x0A
+#define GPIO_AF_NUM_11									0x0B
+#define GPIO_AF_NUM_12									0x0C
+#define GPIO_AF_NUM_13									0x0D
+#define GPIO_AF_NUM_14									0x0E
+#define GPIO_AF_NUM_15									0x0F
+
 /* === APIs supported by this driver === */
 
 /* GPIO Peripheral Clock control function */
