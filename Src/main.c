@@ -35,7 +35,7 @@ static inline void vDoI2CGpioConf(void)
 	sGpioI2C1SclConf.u8GpioPinMode = GPIO_MODE_ALT_FUNC;
 	sGpioI2C1SclConf.u8GpioPinAltFunMode = GPIO_AF_NUM_4;
 	sGpioI2C1SclConf.u8GpioPinOPType = GPIO_OUT_MODE_OD;
-	sGpioI2C1SclConf.u8GpioPinPuPdControl = GPIO_PUPD_NU_ND;
+	sGpioI2C1SclConf.u8GpioPinPuPdControl = GPIO_PUPD_PU;
 	sGpioI2C1SclConf.u8GpioPinSpeed = GPIO_OUT_SPEED_VERY_HIGH;
 
 	TS_GPIO_CONFIG sGpioI2C1SdaConf;
@@ -43,7 +43,7 @@ static inline void vDoI2CGpioConf(void)
 	sGpioI2C1SdaConf.u8GpioPinMode = GPIO_MODE_ALT_FUNC;
 	sGpioI2C1SclConf.u8GpioPinAltFunMode = GPIO_AF_NUM_4;
 	sGpioI2C1SdaConf.u8GpioPinOPType = GPIO_OUT_MODE_OD;
-	sGpioI2C1SdaConf.u8GpioPinPuPdControl = GPIO_PUPD_NU_ND;
+	sGpioI2C1SdaConf.u8GpioPinPuPdControl = GPIO_PUPD_PU;
 	sGpioI2C1SdaConf.u8GpioPinSpeed = GPIO_OUT_SPEED_VERY_HIGH;
 
 	TS_GPIO_HANDLE sGpioI2C1Scl;

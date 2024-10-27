@@ -10,7 +10,8 @@ static inline uint32_t u32CalculatePclk1Value(void);
 static inline uint32_t u32CalculatePllOutputValue(void);
 
 static inline void vDoI2CGenerateStartCondition(TS_I2C_REG_DEF *psI2C);
-static inline void vDoI2CExecuteAddressPhase(TS_I2C_REG_DEF *psI2C, uint8_t u8SlaveAddr);
+static inline void vDoI2CExecuteAddressPhase(TS_I2C_REG_DEF *psI2C, uint8_t u8SlaveAddr, uint8_t u8ReadWrite);
+static inline void vDoI2CClearAddrFlag(TS_I2C_REG_DEF *psI2C);
 static inline void vDoI2CGenerateStopCondition(TS_I2C_REG_DEF *psI2C);
 
 /* Peripheral clock 1 calculation function */
@@ -166,20 +167,36 @@ static inline void vDoI2CGenerateStopCondition(TS_I2C_REG_DEF *psI2C)
  * Parameters   :
  * 					TS_I2C_REG_DEF *psI2C - I2C Base Address
  * 					uint8_t u8SlaveAddr - I2C Slave Address
+ * 					uint8_t u8ReadWrite - Read/Write bit
  * Return       : void
  * ===========================================================================
  */
 
-static inline void vDoI2CExecuteAddressPhase(TS_I2C_REG_DEF *psI2C, uint8_t u8SlaveAddr)
+static inline void vDoI2CExecuteAddressPhase(TS_I2C_REG_DEF *psI2C, uint8_t u8SlaveAddr, uint8_t u8ReadWrite)
 {
-	uint32_t u32RegisterVal = 0;
 	uint8_t u8DrValue = ((u8SlaveAddr & 0x7F) << 1U);	/* Shift address by 1 bit		*/
 
-	u8DrValue &= ~(0x01 << 0U);							/* Reset R/W bit (set write)	*/
+	u8DrValue &= ~(0x01 << 0U);							/* Reset R/W bit				*/
+	u8DrValue |= ((u8ReadWrite && 0x01) << 0U);			/* Set   R/W value				*/
 
 	psI2C->DR = (uint32_t)u8DrValue;
 
 	while(!bDoGetI2CFlag(psI2C, I2C_ADDR_FLAG));		/* Confirm Address sent			*/
+
+	/* Clear ADDR Flag */
+	vDoI2CClearAddrFlag(psI2C);
+}
+
+/* ===========================================================================
+ * Function name: vDoI2CClearAddrFlag()
+ * Parameters   : TS_I2C_REG_DEF *psI2C - I2C Base Address
+ * Return       : void
+ * ===========================================================================
+ */
+
+static inline void vDoI2CClearAddrFlag(TS_I2C_REG_DEF *psI2C)
+{
+	uint32_t u32RegisterVal = 0;
 
 	/* Clear ADDR Flag by reading SR1 and SR2 */
 	u32RegisterVal = psI2C->SR[0];
@@ -246,9 +263,11 @@ void vDoI2CPeriClockControl(TS_I2C_REG_DEF *psI2C, bool bState)
  * Return       : void
  * ===========================================================================
  */
+
 void vDoI2CIni(TS_I2C_HANDLE *psI2CHandle)
 {
 	uint16_t u16CcrValue = 0;
+	uint8_t u8TriseValue = 0;
 	uint8_t u32Pclk1 = u32CalculatePclk1Value();
 	uint8_t u8Pclk1Cr2 = ((u32Pclk1 / 1000000U) & 0x3F);
 	uint8_t u8AddrMode = (psI2CHandle->psI2CConfig->u8I2CAddrMode & 0x01);
@@ -310,6 +329,24 @@ void vDoI2CIni(TS_I2C_HANDLE *psI2CHandle)
 	psI2CHandle->psI2CBaseAddr->CCR &= ~(0x0FFF << 0U);
 	psI2CHandle->psI2CBaseAddr->CCR |= ((u16CcrValue & 0x0FFF) << 0U);
 
+	/* TRISE calculations */
+	switch (psI2CHandle->psI2CConfig->u328I2CSclSpeed) {
+		case I2C_SCL_SPEED_SM:
+			u8TriseValue = ((u32Pclk1 / 1000000U) + 1U);
+			break;
+
+		case I2C_SCL_SPEED_FM_2K:
+		case I2C_SCL_SPEED_FM_4K:
+			u8TriseValue = (((u32Pclk1 * 300U) / 1000000000U) + 1U);
+			break;
+
+		default:
+			break;
+	}
+
+	/* Set TRISE Value */
+	psI2CHandle->psI2CBaseAddr->TRICE &= ~(0x3F << 0U);
+	psI2CHandle->psI2CBaseAddr->TRICE |= ((u8TriseValue & 0x3F) << 0U);
 }
 
 /* ===========================================================================
@@ -319,6 +356,7 @@ void vDoI2CIni(TS_I2C_HANDLE *psI2CHandle)
  * Return       : void
  * ===========================================================================
  */
+
 void vDoI2CDeIni(TS_I2C_REG_DEF *psI2C)
 {
 	if(psI2C == I2C1)
@@ -356,11 +394,9 @@ void vDoI2CMasterSendData(TS_I2C_HANDLE *psI2CHandle, uint8_t *pu8I2CTxBuff, uin
 	vDoI2CGenerateStartCondition(psI2CHandle->psI2CBaseAddr);
 
 	/* Execute Address Phase */
-	vDoI2CExecuteAddressPhase(psI2CHandle->psI2CBaseAddr, u8SlaveAddr);
+	vDoI2CExecuteAddressPhase(psI2CHandle->psI2CBaseAddr, u8SlaveAddr, I2C_WRITE);
 
 	/* Send data */
-
-
 	for(u32I2CLen = 0; u32I2CLen < u32I2CDataLen ; ++u32I2CLen)
 	{
 		/* Wait until TX buffer is not empty */
@@ -377,6 +413,80 @@ void vDoI2CMasterSendData(TS_I2C_HANDLE *psI2CHandle, uint8_t *pu8I2CTxBuff, uin
 	/* Wait until Byte Transfer is not finished */
 	while(!bDoGetI2CFlag(psI2CHandle->psI2CBaseAddr, I2C_BTF_FLAG));
 
+	/* Generate the Stop Condition */
+	vDoI2CGenerateStopCondition(psI2CHandle->psI2CBaseAddr);
+}
+
+/* ===========================================================================
+ * Function name: vDoI2CMasterReceiveData()
+ * Parameters   :
+ * 					TS_I2C_HANDLE *psI2CHandle - I2C Handle structure
+ * 					uint8_t *pu8I2CRxBuff - Address of RX Buffer
+ * 					uint32_t u32I2CDataLen - I2C RX Buffer length
+ * 					uint8_t u8SlaveAddr - I2C Slave Address
+ * Return       : void
+ * ===========================================================================
+ */
+
+void vDoI2CMasterReceiveData(TS_I2C_HANDLE *psI2CHandle, uint8_t *pu8I2CRxBuff, uint32_t u32I2CDataLen, uint8_t u8SlaveAddr)
+{
+	static uint32_t u32I2CLen ;
+
+	/* Generate the Start Condition */
+	vDoI2CGenerateStartCondition(psI2CHandle->psI2CBaseAddr);
+
+	/* Execute Address Phase */
+	vDoI2CExecuteAddressPhase(psI2CHandle->psI2CBaseAddr, u8SlaveAddr, I2C_READ);
+
+	if(1U == u32I2CDataLen)
+	{
+		/* Disable Acking */
+		vDoI2CManageAcking(psI2CHandle->psI2CBaseAddr, false);
+
+		/* Generate the Stop Condition */
+		vDoI2CGenerateStopCondition(psI2CHandle->psI2CBaseAddr);
+
+		/* Clear ADDR Flag */
+		vDoI2CClearAddrFlag(psI2CHandle->psI2CBaseAddr);
+
+		/* Wait until RX buffer is not empty */
+		while(!bDoGetI2CFlag(psI2CHandle->psI2CBaseAddr, I2C_RXNE_FLAG));
+
+		/* Read data into buffer */
+		*pu8I2CRxBuff = psI2CHandle->psI2CBaseAddr->DR;
+
+		return;
+	}
+	else if(u32I2CDataLen > 1U)
+	{
+		/* Clear ADDR Flag */
+		vDoI2CClearAddrFlag(psI2CHandle->psI2CBaseAddr);
+
+		/* Receive data */
+		for(u32I2CLen = u32I2CDataLen; u32I2CLen > 0U ; --u32I2CLen)
+		{
+			/* Wait until RX buffer is not empty */
+			while(!bDoGetI2CFlag(psI2CHandle->psI2CBaseAddr, I2C_RXNE_FLAG));
+
+			if(2U == u32I2CLen) /* If last 2 bytes are remaining */
+			{
+				/* Disable Acking */
+				vDoI2CManageAcking(psI2CHandle->psI2CBaseAddr, false);
+
+				/* Generate the Stop Condition */
+				vDoI2CGenerateStopCondition(psI2CHandle->psI2CBaseAddr);
+			}
+
+			/* Read data into buffer */
+			*pu8I2CRxBuff = psI2CHandle->psI2CBaseAddr->DR;
+
+			pu8I2CRxBuff++;
+		}
+	}
+
+	/* Restore Acknowledge */
+	psI2CHandle->psI2CBaseAddr->CR1 &= ~(0x01 << 10U);
+	psI2CHandle->psI2CBaseAddr->CR1 |= ((psI2CHandle->psI2CConfig->u8I2CAckControl & 0x01) << 10U);
 }
 
 /* I2C Peripheral control functions */
@@ -414,4 +524,25 @@ void vDoI2CPeriControl(TS_I2C_REG_DEF *psI2C, bool bState)
 bool bDoGetI2CFlag(TS_I2C_REG_DEF *psI2C, uint32_t u32I2CFlag)
 {
 	return ((psI2C->SR[(u32I2CFlag / 16)] & (0x01 << (u32I2CFlag % 16))) != 0x00);
+}
+
+/* ===========================================================================
+ * Function name: vDoI2CManageAcking()
+ * Parameters   :
+ * 					TS_I2C_REG_DEF *psI2C - I2C Base Address
+ * 					boolean bState - State of I2C peripheral
+ * Return       : void
+ * ===========================================================================
+ */
+
+void vDoI2CManageAcking(TS_I2C_REG_DEF *psI2C, bool bState)
+{
+	if(bState)
+	{
+		psI2C->CR1 |= (0x01 << 10U);
+	}
+	else
+	{
+		psI2C->CR1 &= ~(0x01 << 10U);
+	}
 }

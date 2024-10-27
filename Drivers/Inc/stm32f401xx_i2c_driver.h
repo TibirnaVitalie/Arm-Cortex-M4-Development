@@ -42,6 +42,11 @@ typedef struct
 #define I2C_FM_DUTY_CYCLE_2								0x00
 #define I2C_FM_DUTY_CYCLE_16_9							0x01
 
+/* I2C Write / Read modes */
+
+#define I2C_WRITE										0x00
+#define I2C_READ										0x01
+
 /* === I2Cs macros === */
 
 /* I2C Status flags (I2C_SR1 Register) */
@@ -91,5 +96,6 @@ void vDoI2CMasterReceiveData(TS_I2C_HANDLE *psI2CHandle, uint8_t *pu8I2CRxBuff, 
 
 void vDoI2CPeriControl(TS_I2C_REG_DEF *psI2C, bool bState);
 bool bDoGetI2CFlag(TS_I2C_REG_DEF *psI2C, uint32_t u32I2CFlag);
+void vDoI2CManageAcking(TS_I2C_REG_DEF *psI2C, bool bState);
 
 #endif /* INC_STM32F401XX_I2C_DRIVER_H_ */
